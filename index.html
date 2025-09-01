@@ -2,299 +2,73 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-  <title>Life Dashboard - Complete Edition</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Life Dashboard</title>
+
+  <!-- React／Babel／TailwindCDN -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont,
-        'Segoe UI', 'Roboto', sans-serif;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI','Roboto',sans-serif; }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect, useRef } = React;
 
-    // ——— Icons ———
-    const FileText = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 12h6m-6 4h6m2 5H7a2 2 
-             0 01-2-2V5a2 2 0 012-2h5.586a1 
-             1 0 01.707.293l5.414 5.414a1 
-             1 0 01.293.707V19a2 2 0 01-2 2z"
-        />
-      </svg>
-    );
-    const BookOpen = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 6.253v13m0-13C10.832 
-             5.477 9.246 5 7.5 5S4.168 5.477 
-             3 6.253v13C4.168 18.477 5.754 
-             18 7.5 18s3.332.477 4.5 
-             1.253m0-13C13.168 5.477 14.754 
-             5 16.5 5c1.746 0 3.332.477 
-             4.5 1.253v13C19.832 18.477 
-             18.246 18 16.5 18c-1.746 
-             0-3.332.477-4.5 1.253"
-        />
-      </svg>
-    );
-    const Briefcase = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 13.255A23.931 
-             23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 
-             6V4a2 2 0 00-2-2h-4a2 2 0 00-2 
-             2v2m8 0H8m8 0v6a2 2 0 01-2 
-             2H10a2 2 0 01-2-2V6"
-        />
-      </svg>
-    );
-    const Plus = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 4v16m8-8H4"
-        />
-      </svg>
-    );
-    const Edit3 = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M11 5H6a2 2 0 
-             00-2 2v11a2 2 0 002 2h11a2 
-             2 0 002-2v-5m-1.414-9.414a2 
-             2 0 112.828 2.828L11.828 
-             15H9v-2.828l8.586-8.586z"
-        />
-      </svg>
-    );
-    const Save = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 7H5a2 2 0 00-2 
-             2v9a2 2 0 002 2h14a2 2 
-             0 002-2V9a2 2 0 00-2-2h-3m-1 
-             4l-3 3-3-3m3-3v12"
-        />
-      </svg>
-    );
-    const X = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M6 18L18 6M6 6l12 12"
-        />
-      </svg>
-    );
-    const Clock = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 8v4l3 3m6-3a9 
-             9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-    );
-    const Moon = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M20.354 
-             15.354A9 9 0 018.646 3.646 9.003 
-             9.003 0 0012 21a9.003 9.003 
-             0 008.354-5.646z"
-        />
-      </svg>
-    );
-    const Sun = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 3v1m0 16v1m9-9h-1M4 
-             12H3m15.364 6.364l-.707-.707M6.343 
-             6.343l-.707-.707m12.728 0l-.707.707M6.343 
-             17.657l-.707.707M16 12a4 4 0 11-8 0 
-             4 4 0 018 0z"
-        />
-      </svg>
-    );
-    const Calendar = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 7V3m8 4V3m-9 
-             8h10M5 21h14a2 2 0 002-2V7a2 2 
-             0 00-2-2H5a2 2 0 00-2 2v12a2 
-             2 0 002 2z"
-        />
-      </svg>
-    );
-    const Download = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 10v6m0 
-             0l-3-3m3 3l3-3m2 8H7a2 2 
-             0 01-2-2V5a2 2 0 012-2h5.586a1 
-             1 0 01.707.293l5.414 5.414a1 
-             1 0 01.293.707V19a2 2 0 01-2 
-             2z"
-        />
-      </svg>
-    );
-    const Upload = () => (
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M7 16a4 4 0 01-.88-7.903A5 
-             5 0 1115.9 6L16 6a5 5 0 011 
-             9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-        />
-      </svg>
-    );
+    // —— SVGアイコン省略 —— 
+    const FileText = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const BookOpen = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Briefcase = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Plus = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Edit3 = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Save = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const X = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Clock = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Moon = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Sun = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Calendar = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Download = () => <svg className="w-4 h-4 inline-block" /* … */ />;
+    const Upload = () => <svg className="w-4 h-4 inline-block" /* … */ />;
 
-    // ——— downloadFile を BOM 対応版に差し替え ———
+    // BOM対応ダウンロード関数
     const downloadFile = (filename, content, type = 'text/plain') => {
-      const bom = '\uFEFF'; // UTF-8 BOM
-      const blob = new Blob([bom + content], {
-        type: `${type};charset=utf-8`
-      });
+      const bom = '\uFEFF';
+      const blob = new Blob([bom + content], { type: `${type};charset=utf-8` });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
+      a.href = url; a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     };
-    const LifeDashboard = () => {
-      // ——— State ———
-      const [activeTab, setActiveTab] = useState('diary');
-      const [diaryEntries, setDiaryEntries] = useState([]);
-      const [studyTasks, setStudyTasks] = useState([]);
-      const [workSchedule, setWorkSchedule] = useState([]);
-      const [newEntry, setNewEntry] = useState('');
-      const [editingId, setEditingId] = useState(null);
-      const [editText, setEditText] = useState('');
-      const [saveStatus, setSaveStatus] = useState('');
 
-      // ——— Storage Keys ———
+    const LifeDashboard = () => {
+      // State
+      const [activeTab, setActiveTab]     = useState('diary');
+      const [diaryEntries, setDiaryEntries]   = useState([]);
+      const [studyTasks, setStudyTasks]       = useState([]);
+      const [workSchedule, setWorkSchedule]   = useState([]);
+      const [newEntry, setNewEntry]           = useState('');
+      const [editingId, setEditingId]         = useState(null);
+      const [editText, setEditText]           = useState('');
+      const [saveStatus, setSaveStatus]       = useState('');
+      const fileInputRef = useRef(null);
+
+      // Storage Keys
       const STORAGE_KEYS = {
         diary: 'lifeDashboard_diary',
         study: 'lifeDashboard_study',
-        work: 'lifeDashboard_work'
+        work:  'lifeDashboard_work'
       };
 
-      // ——— load/save も変更不要（常に上書きOK） ———
+      // load/save
       const saveToStorage = (key, data) => {
         try {
           localStorage.setItem(key, JSON.stringify(data));
@@ -304,46 +78,36 @@
         }
         setTimeout(() => setSaveStatus(''), 2000);
       };
-      const loadFromStorage = (key) => {
+      const loadFromStorage = key => {
         try {
-          const stored = localStorage.getItem(key);
-          return stored ? JSON.parse(stored) : [];
+          const s = localStorage.getItem(key);
+          return s ? JSON.parse(s) : [];
         } catch {
           return [];
         }
       };
 
-      // ——— 初期ロード ———
+      // 初期読み込み
       useEffect(() => {
         setDiaryEntries(loadFromStorage(STORAGE_KEYS.diary));
         setStudyTasks(loadFromStorage(STORAGE_KEYS.study));
         setWorkSchedule(loadFromStorage(STORAGE_KEYS.work));
       }, []);
 
-      // ——— 自動保存 ———
-      useEffect(() => {
-        saveToStorage(STORAGE_KEYS.diary, diaryEntries);
-      }, [diaryEntries]);
-      useEffect(() => {
-        saveToStorage(STORAGE_KEYS.study, studyTasks);
-      }, [studyTasks]);
-      useEffect(() => {
-        saveToStorage(STORAGE_KEYS.work, workSchedule);
-      }, [workSchedule]);
+      // 自動保存
+      useEffect(() => { saveToStorage(STORAGE_KEYS.diary, diaryEntries); }, [diaryEntries]);
+      useEffect(() => { saveToStorage(STORAGE_KEYS.study,   studyTasks);   }, [studyTasks]);
+      useEffect(() => { saveToStorage(STORAGE_KEYS.work,    workSchedule); }, [workSchedule]);
 
-      // ——— 追加時のタイムスタンプに秒を含め, id にも millis を使う ———
+      // 追加関数
       const addDiaryEntry = () => {
         if (!newEntry.trim()) return;
         const now = new Date();
         const entry = {
-          id: now.getTime(), // ソート用
+          id: now.getTime(),
           timestamp: now.toLocaleString('ja-JP', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
             hour12: false
           }),
           content: newEntry.trim()
@@ -351,225 +115,316 @@
         setDiaryEntries([entry, ...diaryEntries]);
         setNewEntry('');
       };
-
       const addStudyTask = () => {
         if (!newEntry.trim()) return;
-        const task = {
+        setStudyTasks([...studyTasks, {
           id: Date.now(),
           subject: newEntry.trim(),
           completed: false,
           date: new Date().toLocaleDateString('ja-JP')
-        };
-        setStudyTasks([...studyTasks, task]);
+        }]);
         setNewEntry('');
       };
-
       const addWorkSchedule = () => {
         if (!newEntry.trim()) return;
-        const schedule = {
+        setWorkSchedule([...workSchedule, {
           id: Date.now(),
           date: new Date().toLocaleDateString('ja-JP'),
           shift: newEntry.trim()
-        };
-        setWorkSchedule([...workSchedule, schedule]);
+        }]);
         setNewEntry('');
       };
 
-      // ——— エクスポート／インポート ———
+      // 編集
+      const startEdit = entry => {
+        setEditingId(entry.id);
+        setEditText(entry.content);
+      };
+      const saveEdit = () => {
+        setDiaryEntries(diaryEntries.map(e => e.id === editingId ? { ...e, content: editText } : e));
+        setEditingId(null);
+        setEditText('');
+      };
+      const cancelEdit = () => {
+        setEditingId(null);
+        setEditText('');
+      };
+
+      // エクスポート／インポート関数
       const exportDiaryAsText = () => {
-        const header =
-          `Life Dashboard 日記\n` +
-          `エクスポート日時: ${new Date().toLocaleString('ja-JP', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-          })}\n` +
-          `${'='.repeat(50)}\n\n`;
-
-        // 最新順にソート
-        const sorted = [...diaryEntries].sort(
-          (a, b) => b.id - a.id
-        );
-
-        // 各エントリを文字列化
-        const lines = sorted.map((e, idx) => {
-          return (
-            `【${idx + 1}】 ` +
-            `${e.timestamp}\n` +
-            `${'-'.repeat(40)}\n` +
-            `${e.content}`
-          );
-        });
-
-        downloadFile(
-          `日記_${new Date().toISOString().split('T')[0]}.txt`,
-          header + lines.join('\n\n'),
-          'text/plain'
-        );
-        setSaveStatus('日記をテキストファイルでエクスポートしました ✓');
-        setTimeout(() => setSaveStatus(''), 3000);
+        const sorted = [...diaryEntries].sort((a,b) => b.id - a.id);
+        const lines = sorted.map(e => `[${e.timestamp}] ${e.content}`);
+        downloadFile('diary.txt', lines.join('\n'));
       };
-
       const exportStudyAsText = () => {
-        const header =
-          `Life Dashboard 勉強記録\n` +
-          `エクスポート日時: ${new Date().toLocaleString('ja-JP')}\n` +
-          `${'='.repeat(50)}\n\n`;
-        const completed = studyTasks.filter(t => t.completed);
-        const pending = studyTasks.filter(t => !t.completed);
-
-        let body = `【完了済み】 (${completed.length}件)\n${'-'.repeat(30)}\n`;
-        body += completed.map(t => `✓ ${t.subject} (${t.date})`).join('\n');
-        body += `\n\n【未完了】 (${pending.length}件)\n${'-'.repeat(30)}\n`;
-        body += pending.map(t => `□ ${t.subject} (${t.date})`).join('\n');
-
-        downloadFile(
-          `勉強記録_${new Date().toISOString().split('T')[0]}.txt`,
-          header + body,
-          'text/plain'
-        );
-        setSaveStatus('勉強記録をテキストファイルでエクスポートしました ✓');
-        setTimeout(() => setSaveStatus(''), 3000);
+        const lines = studyTasks.map(t => `${t.date} ${t.subject} [${t.completed? '完了':'未完'}]`);
+        downloadFile('study.txt', lines.join('\n'));
       };
-
       const exportWorkAsText = () => {
-        const header =
-          `Life Dashboard 仕事記録\n` +
-          `エクスポート日時: ${new Date().toLocaleString('ja-JP')}\n` +
-          `${'='.repeat(50)}\n\n` +
-          `【シフトパターン説明】\n` +
-          `a:日勤, b:夜勤, c:深夜勤, z:休み (z3:深夜勤明け)\n\n` +
-          `【勤務記録】\n${'-'.repeat(30)}\n`;
-
-        const lines = workSchedule.map(w => {
-          const shiftMap = { a: '日勤', b: '夜勤', c: '深夜勤', z: '休み' };
-          const key = w.shift.toLowerCase().charAt(0);
-          return `${w.date}: ${w.shift} (${shiftMap[key] || '不明'})`;
-        });
-
-        downloadFile(
-          `仕事記録_${new Date().toISOString().split('T')[0]}.txt`,
-          header + lines.join('\n'),
-          'text/plain'
-        );
-        setSaveStatus('仕事記録をテキストファイルでエクスポートしました ✓');
-        setTimeout(() => setSaveStatus(''), 3000);
+        const lines = workSchedule.map(w => `${w.date} ${w.shift}`);
+        downloadFile('work.txt', lines.join('\n'));
       };
-
       const exportAllAsCSV = () => {
-        // CSV も BOM 対応は downloadFile で担保
-        let csv = '種別,日時,内容,完了状態\n';
-        diaryEntries
-          .sort((a, b) => b.id - a.id) // 最新順
-          .forEach(e => {
-            const content = e.content
-              .replace(/"/g, '""')
-              .replace(/\n/g, ' ');
-            csv += `日記,"${e.timestamp}","${content}",\n`;
-          });
-        studyTasks.forEach(t => {
-          const s = t.subject.replace(/"/g, '""');
-          csv += `勉強,"${t.date}","${s}","${t.completed ? '完了' : ''}"\n`;
-        });
-        workSchedule.forEach(w => {
-          csv += `仕事,"${w.date}","${w.shift}",\n`;
-        });
-
-        downloadFile(
-          `LifeDashboard_全データ_${new Date()
-            .toISOString()
-            .split('T')[0]}.csv`,
-          csv,
-          'text/csv'
-        );
-        setSaveStatus('全データをCSVファイルでエクスポートしました ✓');
-        setTimeout(() => setSaveStatus(''), 3000);
+        let csv = '種別,日付,詳細,ステータス\n';
+        diaryEntries.forEach(d => csv += `日記,${d.timestamp},${d.content},\n`);
+        studyTasks.forEach(s => csv += `勉強,${s.date},${s.subject},${s.completed}\n`);
+        workSchedule.forEach(w => csv += `仕事,${w.date},${w.shift},\n`);
+        downloadFile('all.csv', csv, 'text/csv');
       };
-
       const exportAllAsJSON = () => {
-        const data = {
-          exportDate: new Date().toISOString(),
-          diary: diaryEntries,
-          study: studyTasks,
-          work: workSchedule
-        };
-        downloadFile(
-          `LifeDashboard_バックアップ_${new Date()
-            .toISOString()
-            .split('T')[0]}.json`,
-          JSON.stringify(data, null, 2),
-          'application/json'
-        );
-        setSaveStatus('全データをJSONファイルでバックアップしました ✓');
-        setTimeout(() => setSaveStatus(''), 3000);
+        const data = { diary: diaryEntries, study: studyTasks, work: workSchedule };
+        downloadFile('all.json', JSON.stringify(data, null, 2), 'application/json');
       };
-
-      const importFromJSON = (e) => {
+      const importFromJSON = e => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = ev => {
           try {
-            const data = JSON.parse(ev.target.result);
-            data.diary && setDiaryEntries(data.diary);
-            data.study && setStudyTasks(data.study);
-            data.work && setWorkSchedule(data.work);
-            setSaveStatus('JSONファイルからデータをインポートしました ✓');
+            const obj = JSON.parse(ev.target.result);
+            setDiaryEntries(obj.diary || []);
+            setStudyTasks(obj.study || []);
+            setWorkSchedule(obj.work || []);
+            setSaveStatus('インポート完了 ✓');
           } catch {
-            setSaveStatus('ファイルの読み込みに失敗しました ✗');
+            setSaveStatus('インポート失敗 ✗');
           }
-          setTimeout(() => setSaveStatus(''), 3000);
-        };
-        reader.readAsText(file);
-        e.target.value = '';
-      };
-
-      const deleteEntry = (id, type) => {
-        if (type === 'diary') setDiaryEntries(diaryEntries.filter(o => o.id !== id));
-        if (type === 'study') setStudyTasks(studyTasks.filter(o => o.id !== id));
-        if (type === 'work') setWorkSchedule(workSchedule.filter(o => o.id !== id));
-      };
-
-      const clearAllData = () => {
-        if (confirm('すべてのデータを削除しますか？この操作は取り消せません。')) {
-          Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
-          setDiaryEntries([]); setStudyTasks([]); setWorkSchedule([]);
-          setSaveStatus('すべてのデータを削除しました');
           setTimeout(() => setSaveStatus(''), 2000);
-        }
+        };
+        reader.readAsText(file, 'UTF-8');
+        e.target.value = ''; // 同じファイルも再選択できるよう
       };
 
-      // ——— タブ定義 ———
+      // 削除／クリア
+      const deleteEntry = (id, type) => {
+        if (type === 'diary') setDiaryEntries(diaryEntries.filter(e => e.id !== id));
+        if (type === 'study') setStudyTasks(studyTasks.filter(e => e.id !== id));
+        if (type === 'work')  setWorkSchedule(workSchedule.filter(e => e.id !== id));
+      };
+      const clearAllData = () => {
+        if (!window.confirm('本当に全データを削除しますか？')) return;
+        setDiaryEntries([]); setStudyTasks([]); setWorkSchedule([]);
+        localStorage.removeItem(STORAGE_KEYS.diary);
+        localStorage.removeItem(STORAGE_KEYS.study);
+        localStorage.removeItem(STORAGE_KEYS.work);
+        setSaveStatus('全データ削除 ✓');
+        setTimeout(() => setSaveStatus(''), 2000);
+      };
+
+      // タブ定義
       const tabs = [
         { id: 'diary', name: '日記', icon: FileText },
         { id: 'study', name: '勉強', icon: BookOpen },
-        { id: 'work', name: '仕事', icon: Briefcase }
+        { id: 'work',  name: '仕事', icon: Briefcase }
       ];
 
-      // ——— Shift Patterns ———
+      // シフトパターン
       const shiftPatterns = {
-        a: { name: '日勤', icon: Sun, color: 'bg-yellow-100 text-yellow-800' },
-        b: { name: '夜勤', icon: Moon, color: 'bg-blue-100 text-blue-800' },
-        c: { name: '深夜勤', icon: Clock, color: 'bg-purple-100 text-purple-800' },
-        z: { name: '休み', icon: Calendar, color: 'bg-green-100 text-green-800' }
+        日勤: { icon: Sun,   color: 'bg-yellow-100 text-yellow-800'  },
+        夜勤: { icon: Moon,  color: 'bg-blue-100 text-blue-800'     },
+        深夜勤: { icon: Clock,color: 'bg-purple-100 text-purple-800' },
+        休み: { icon: Calendar,color: 'bg-green-100 text-green-800'  }
       };
 
-      // ——— JSX 渡し ———
+      // UI描画
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-          {/* … ここに Header／ExportPanel／TabNavigation／各タブの JSX をそのまま貼り付け… */}
+          <div className="max-w-4xl mx-auto">
+            {/* ヘッダー */}
+            <header className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">Life Dashboard</h1>
+              <p className="text-gray-600">勉強・仕事・日記を一つの場所で管理</p>
+              <p className="text-sm text-gray-500 mt-2">
+                {new Date().toLocaleDateString('ja-JP', {
+                  year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+                })}
+              </p>
+              {saveStatus && <div className="text-sm text-blue-600 font-medium mt-2">{saveStatus}</div>}
+            </header>
+
+            {/* エクスポート/インポートパネル */}
+            <div className="bg-white rounded-lg shadow-md p-4 mb-6 space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <button onClick={exportDiaryAsText}
+                  className="px-3 py-1 bg-white border rounded hover:bg-gray-50">
+                  <Download /> 日記TXT
+                </button>
+                <button onClick={exportStudyAsText}
+                  className="px-3 py-1 bg-white border rounded hover:bg-gray-50">
+                  <Download /> 勉強TXT
+                </button>
+                <button onClick={exportWorkAsText}
+                  className="px-3 py-1 bg-white border rounded hover:bg-gray-50">
+                  <Download /> 仕事TXT
+                </button>
+                <button onClick={exportAllAsCSV}
+                  className="px-3 py-1 bg-white border rounded hover:bg-gray-50">
+                  <Download /> CSV出力
+                </button>
+                <button onClick={exportAllAsJSON}
+                  className="px-3 py-1 bg-white border rounded hover:bg-gray-50">
+                  <Download /> JSON出力
+                </button>
+                <label className="px-3 py-1 bg-white border rounded cursor-pointer hover:bg-gray-50">
+                  <Upload /> JSON取込
+                  <input type="file" accept="application/json"
+                         className="hidden" ref={fileInputRef}
+                         onChange={importFromJSON} />
+                </label>
+                <button onClick={clearAllData}
+                  className="px-3 py-1 bg-red-100 border border-red-300 text-red-700 rounded hover:bg-red-200">
+                  全データ削除
+                </button>
+              </div>
+            </div>
+
+            {/* タブナビ */}
+            <div className="flex justify-center mb-6 space-x-4">
+              {tabs.map(t => (
+                <button key={t.id}
+                  onClick={() => { setActiveTab(t.id); setNewEntry(''); cancelEdit(); }}
+                  className={`px-4 py-2 rounded-lg font-medium ${
+                    activeTab === t.id
+                      ? 'bg-indigo-600 text-white shadow'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}>
+                  <t.icon /> <span className="ml-1">{t.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* コンテンツ */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              {/* 日記 */}
+              {activeTab === 'diary' && (
+                <div>
+                  <div className="flex mb-4">
+                    <input type="text" value={newEntry}
+                      onChange={e => setNewEntry(e.target.value)}
+                      className="flex-1 p-2 border rounded-l"
+                      placeholder="新しい日記を入力…" />
+                    <button onClick={addDiaryEntry}
+                      className="px-4 bg-indigo-600 text-white rounded-r">
+                      <Plus />
+                    </button>
+                  </div>
+                  <ul className="space-y-4">
+                    {diaryEntries.map(e => (
+                      <li key={e.id} className="border p-4 rounded">
+                        <div className="flex justify-between mb-2 text-sm text-gray-500">
+                          <span>{e.timestamp}</span>
+                          <div className="space-x-2">
+                            {editingId === e.id
+                              ? <>
+                                  <button onClick={saveEdit}
+                                    className="text-green-600"><Save /></button>
+                                  <button onClick={cancelEdit}
+                                    className="text-gray-400"><X /></button>
+                                </>
+                              : <>
+                                  <button onClick={() => startEdit(e)}
+                                    className="text-blue-600"><Edit3 /></button>
+                                  <button onClick={() => deleteEntry(e.id,'diary')}
+                                    className="text-red-600"><X /></button>
+                                </>
+                            }
+                          </div>
+                        </div>
+                        {editingId === e.id
+                          ? <textarea className="w-full p-2 border rounded"
+                              value={editText}
+                              onChange={e => setEditText(e.target.value)} />
+                          : <p className="whitespace-pre-wrap">{e.content}</p>
+                        }
+                      </li>
+                    ))}
+                    {diaryEntries.length === 0 && <p className="text-center text-gray-400">日記がありません</p>}
+                  </ul>
+                </div>
+              )}
+
+              {/* 勉強 */}
+              {activeTab === 'study' && (
+                <div>
+                  <div className="flex mb-4">
+                    <input type="text" value={newEntry}
+                      onChange={e => setNewEntry(e.target.value)}
+                      className="flex-1 p-2 border rounded-l"
+                      placeholder="新しい勉強項目を入力…" />
+                    <button onClick={addStudyTask}
+                      className="px-4 bg-indigo-600 text-white rounded-r">
+                      <Plus />
+                    </button>
+                  </div>
+                  <ul className="space-y-2">
+                    {studyTasks.map(t => (
+                      <li key={t.id} className="flex items-center justify-between p-2 border rounded">
+                        <label className="flex items-center space-x-2">
+                          <input type="checkbox" checked={t.completed}
+                            onChange={() => {
+                              setStudyTasks(studyTasks.map(x =>
+                                x.id === t.id ? { ...x, completed: !x.completed } : x
+                              ));
+                            }} />
+                          <span className={t.completed ? 'line-through text-gray-400' : ''}>
+                            {t.subject}
+                          </span>
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-500">{t.date}</span>
+                          <button onClick={() => deleteEntry(t.id,'study')}
+                            className="text-red-600"><X /></button>
+                        </div>
+                      </li>
+                    ))}
+                    {studyTasks.length === 0 && <p className="text-center text-gray-400">勉強項目がありません</p>}
+                  </ul>
+                </div>
+              )}
+
+              {/* 仕事 */}
+              {activeTab === 'work' && (
+                <div>
+                  <div className="flex mb-4">
+                    <input type="text" value={newEntry}
+                      onChange={e => setNewEntry(e.target.value)}
+                      className="flex-1 p-2 border rounded-l"
+                      placeholder="シフトを入力（例: 日勤, 夜勤…）" />
+                    <button onClick={addWorkSchedule}
+                      className="px-4 bg-indigo-600 text-white rounded-r">
+                      <Plus />
+                    </button>
+                  </div>
+                  <ul className="space-y-2">
+                    {workSchedule.map(w => {
+                      const p = shiftPatterns[w.shift] || { color: 'bg-gray-100 text-gray-800', icon: Clock };
+                      return (
+                        <li key={w.id} className="flex items-center justify-between p-2 border rounded">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-500">{w.date}</span>
+                            <span className={`px-2 py-1 rounded ${p.color}`}>
+                              <p.icon /> <span className="ml-1">{w.shift}</span>
+                            </span>
+                          </div>
+                          <button onClick={() => deleteEntry(w.id,'work')}
+                            className="text-red-600"><X /></button>
+                        </li>
+                      );
+                    })}
+                    {workSchedule.length === 0 && <p className="text-center text-gray-400">予定がありません</p>}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       );
     };
 
-    ReactDOM.render(
-      <LifeDashboard />,
-      document.getElementById('root')
-    );
+    // React18 マウント
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<LifeDashboard />);
   </script>
 </body>
 </html>
