@@ -2,10 +2,9 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>記録アプリ＋検索＆タグ</title>
+  <title>記録アプリ＋検索＆タグ＋インポート</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    /* --- 既存スタイル（省略せず入れてください） --- */
     body { font-family: sans-serif; margin:0; padding:0; background:#f0f2f5; }
     .container { max-width:800px; margin:20px auto; padding:0 10px; }
     section { background:#fff; border:1px solid #ddd; margin-bottom:20px;
@@ -13,62 +12,61 @@
     section h2 { margin-top:0; }
     textarea { width:100%; min-height:80px; margin-bottom:8px;
                padding:8px; box-sizing:border-box; font-size:14px; }
+    .controls {
+      display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .controls input {
+      flex: 1; padding: 8px; font-size: 14px;
+      border: 1px solid #ccc; border-radius: 4px;
+    }
+    .tag-input {
+      width: 100%; padding: 6px 8px; font-size: 13px;
+      margin-bottom: 8px; box-sizing: border-box;
+      border: 1px solid #ccc; border-radius: 4px;
+    }
     .btn-group { display:flex; gap:8px; margin-bottom:12px; }
-    .btn-group button { flex:1; padding:6px 12px; font-size:14px; cursor:pointer; }
+    .btn-group button {
+      flex:1; padding:6px 12px; font-size:14px; cursor:pointer;
+    }
     .history { list-style:none; padding:0; margin:0; }
     .history li { border-top:1px solid #eee; padding:8px 0; }
     .timestamp { font-size:12px; color:#666; margin-bottom:4px; }
-
-    /* --- 追加スタイル --- */
-    .controls {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    .controls input {
-      flex: 1;
-      padding: 8px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    .tag-input {
-      width: 100%;
-      padding: 6px 8px;
-      font-size: 13px;
-      margin-bottom: 8px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      color: #333;
-    }
     .badge {
-      display: inline-block;
-      background: #007bff;
-      color: #fff;
-      padding: 2px 6px;
-      font-size: 12px;
-      border-radius: 3px;
-      margin-right: 4px;
+      display:inline-block; background:#007bff; color:#fff;
+      padding:2px 6px; font-size:12px; border-radius:3px;
+      margin-right:4px;
     }
+    .toast {
+      position: fixed; bottom:20px; left:50%;
+      transform:translateX(-50%);
+      background:rgba(0,0,0,0.75); color:#fff;
+      padding:8px 16px; border-radius:4px;
+      opacity:0; transition:opacity .3s; z-index:100;
+    }
+    .toast.show { opacity:1; }
+    #debug-panel {
+      background:#272822; color:#f8f8f2; padding:12px;
+      border-radius:4px; margin-top:40px; font-size:13px;
+      overflow-x:auto;
+    }
+    #debug-panel h2 { margin-top:0; font-size:16px; color:#66d9ef; }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- 全体検索／タグフィルタ -->
+    <!-- 検索＆タグフィルタ -->
     <div class="controls">
       <input id="search-input" placeholder="キーワードで検索">
       <input id="tag-filter-input" placeholder="タグで絞り込み">
     </div>
 
-    <!-- セクションを自動生成 -->
+    <!-- セクション自動生成 -->
     <script>
       const sections = [
-        { id:'diary',   label:'日記'   },
-        { id:'study',   label:'勉強'   },
-        { id:'work',    label:'仕事'   },
-        { id:'schedule',label:'予定'   }
+        { id:'diary',    label:'日記' },
+        { id:'study',    label:'勉強' },
+        { id:'work',     label:'仕事' },
+        { id:'schedule', label:'予定' }
       ];
       sections.forEach(sec => {
         document.write(`
@@ -80,21 +78,31 @@
               <button class="save-btn">保存</button>
               <button class="export-md-btn">MD保存</button>
               <button class="export-json-btn">JSON保存</button>
+              <button class="import-btn">インポート</button>
+              <input type="file" class="import-input" accept=".json,.md" style="display:none">
             </div>
             <ul class="history"></ul>
           </section>
         `);
       });
     </script>
+
+    <!-- デバッグパネル -->
+    <section id="debug-panel">
+      <h2>デバッグパネル</h2>
+      <pre id="debug-output"></pre>
+    </section>
   </div>
 
   <script>
-    /* ヘルパー定義 */
+    // HTMLエスケープ
     function escapeHTML(str) {
       return str.replace(/&/g,'&amp;')
                 .replace(/</g,'&lt;')
                 .replace(/>/g,'&gt;');
     }
+
+    // ダウンロードヘルパー
     function download(content, filename, mime) {
       const blob = new Blob([content], { type: mime });
       const url  = URL.createObjectURL(blob);
@@ -103,7 +111,19 @@
       URL.revokeObjectURL(url);
     }
 
-    /* localStorage読み書き */
+    // トースト通知
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast'; t.textContent = msg;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => {
+        t.classList.remove('show');
+        setTimeout(() => t.remove(), 300);
+      }, 2000);
+    }
+
+    // localStorage入出力
     function getItems(sec) {
       return JSON.parse(localStorage.getItem(sec) || '[]');
     }
@@ -111,77 +131,121 @@
       localStorage.setItem(sec, JSON.stringify(items));
     }
 
-    /* エントリ保存 */
+    // 保存
     function saveEntry(sec) {
-      const area = document.querySelector(`#${sec} .editor`);
-      const tagInput = document.querySelector(`#${sec} .tag-input`);
-      const text = area.value.trim();
+      const area    = document.querySelector(`#${sec} .editor`);
+      const tagIn   = document.querySelector(`#${sec} .tag-input`);
+      const text    = area.value.trim();
       if (!text) return alert('テキストを入力してください');
-      const tags = tagInput.value
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
+      const tags = tagIn.value.split(',')
+                     .map(s=>s.trim()).filter(Boolean);
 
       const items = getItems(sec);
       const now   = new Date();
       const dt    = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} `
-        +`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:`
-        +`${String(now.getSeconds()).padStart(2,'0')}`;
+                   + `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:`
+                   + `${String(now.getSeconds()).padStart(2,'0')}`;
 
       items.push({ datetime: dt, text, tags });
       saveItems(sec, items);
-
-      area.value = ''; tagInput.value = '';
-      renderAllSections();  // フィルタを再適用しつつ再描画
+      area.value = ''; tagIn.value = '';
+      renderAllSections();
+      updateDebugPanel();
+      showToast('保存しました');
     }
 
-    /* 各種エクスポート */
+    // Markdownエクスポート
     function exportMarkdown(sec, items) {
       let md = `## ${sec}\n\n`;
-      items.forEach(({datetime,text,tags}) => {
-        const tagStr = tags.length ? ` [${tags.join(',')}]` : '';
-        md += `- [${datetime}]${tagStr} ${text.replace(/\n/g,' ')}\n`;
+      items.forEach(({datetime,text,tags})=>{
+        const tg = tags.length? ` [${tags.join(',')}]` : '';
+        md += `- [${datetime}]${tg} ${text.replace(/\n/g,' ')}\n`;
       });
       download(md, `${sec}.md`, 'text/markdown');
     }
+
+    // JSONエクスポート
     function exportJSON(sec, items) {
       download(JSON.stringify(items,null,2), `${sec}.json`, 'application/json');
     }
 
-    /* 履歴描画（フィルタ適用含む） */
+    // Markdownインポートパーサ
+    function parseMarkdown(md) {
+      return md.split('\n').reduce((arr,line)=>{
+        const m = line.match(/^- \
+
+\[(.+?)\\]
+
+(?: \
+
+\[([^\\]
+
+]*)\\]
+
+)? (.+)/);
+        if (m) {
+          const dt   = m[1];
+          const tags = m[2]? m[2].split(',').map(s=>s.trim()).filter(Boolean):[];
+          const txt  = m[3];
+          arr.push({ datetime:dt, text:txt, tags });
+        }
+        return arr;
+      }, []);
+    }
+
+    // インポート処理
+    function handleImport(sec, file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result;
+        let items = [];
+        if (file.name.endsWith('.json')) {
+          try {
+            items = JSON.parse(text);
+          } catch {
+            return alert('JSONのパースに失敗しました');
+          }
+        } else if (file.name.endsWith('.md')) {
+          items = parseMarkdown(text);
+        }
+        saveItems(sec, items);
+        renderAllSections();
+        updateDebugPanel();
+        showToast('インポート完了');
+      };
+      reader.readAsText(file);
+    }
+
+    // 描画（フィルタ適用）
     function renderSection(sec, filter) {
       const ul    = document.querySelector(`#${sec} .history`);
       let items   = getItems(sec);
+      const kw    = filter.keyword.toLowerCase();
+      const tg    = filter.tag.toLowerCase();
 
-      // 検索フィルタ
-      if (filter.keyword) {
-        const kw = filter.keyword.toLowerCase();
+      if (kw) {
         items = items.filter(it =>
           it.text.toLowerCase().includes(kw) ||
           it.tags.some(t=>t.toLowerCase().includes(kw))
         );
       }
-      // タグフィルタ
-      if (filter.tag) {
-        const tg = filter.tag.toLowerCase();
-        items = items.filter(it => it.tags.some(t=>t.toLowerCase()===tg));
+      if (tg) {
+        items = items.filter(it =>
+          it.tags.some(t=>t.toLowerCase()===tg)
+        );
       }
 
-      // 新しい順に表示
-      items = items.slice().reverse();
-      ul.innerHTML = items.map(it => {
-        const badges = it.tags.map(t => `<span class="badge">${escapeHTML(t)}</span>`).join('');
+      ul.innerHTML = items.slice().reverse().map(it => {
+        const badges = it.tags.map(t=>`<span class="badge">${escapeHTML(t)}</span>`).join('');
         return `
           <li>
             <div class="timestamp">${it.datetime}</div>
             <div>${badges}</div>
             <pre>${escapeHTML(it.text)}</pre>
-          </li>
-        `;
+          </li>`;
       }).join('');
     }
 
-    /* 全セクション再描画 */
     function renderAllSections() {
       const keyword = document.getElementById('search-input').value.trim();
       const tag     = document.getElementById('tag-filter-input').value.trim();
@@ -189,30 +253,47 @@
       sections.forEach(sec => renderSection(sec.id, filter));
     }
 
-    /* イベント設定 */
+    // デバッグパネル更新
+    function updateDebugPanel() {
+      const out = document.getElementById('debug-output');
+      const state = {};
+      sections.forEach(sec => state[sec.id] = getItems(sec.id));
+      out.textContent = JSON.stringify(state, null, 2);
+    }
+
+    // 初期化
     document.addEventListener('DOMContentLoaded', () => {
-      // 保存＆エクスポート
       sections.forEach(sec => {
+        // 保存
         document.querySelector(`#${sec.id} .save-btn`)
-          .addEventListener('click', () => saveEntry(sec.id));
+          .addEventListener('click', ()=> saveEntry(sec.id));
+        // エクスポート
         document.querySelector(`#${sec.id} .export-md-btn`)
-          .addEventListener('click', () =>
-            exportMarkdown(sec.id, getItems(sec.id))
+          .addEventListener('click',
+            ()=> exportMarkdown(sec.id, getItems(sec.id))
           );
         document.querySelector(`#${sec.id} .export-json-btn`)
-          .addEventListener('click', () =>
-            exportJSON(sec.id, getItems(sec.id))
+          .addEventListener('click',
+            ()=> exportJSON(sec.id, getItems(sec.id))
           );
+        // インポート
+        const input = document.querySelector(`#${sec.id} .import-input`);
+        document.querySelector(`#${sec.id} .import-btn`)
+          .addEventListener('click', ()=> input.click());
+        input.addEventListener('change', e=>{
+          if (e.target.files.length) handleImport(sec.id, e.target.files[0]);
+          e.target.value = '';
+        });
       });
 
-      // 検索＆タグフィルタ
+      // フィルタイベント
       document.getElementById('search-input')
         .addEventListener('input', renderAllSections);
       document.getElementById('tag-filter-input')
         .addEventListener('input', renderAllSections);
 
-      // 初回描画
       renderAllSections();
+      updateDebugPanel();
     });
   </script>
 </body>
