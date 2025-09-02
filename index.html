@@ -46,11 +46,13 @@
       border: 1px solid #ccc;
     }
     /* ← ここから下を追加/修正 */
-    textarea#entry-text {
-      min-height: 200px;   /* 最小高さを200pxに設定 */
-      max-height: 400px;   /* 最大高さを400pxまで */
-      resize: vertical;    /* 縦方向のみリサイズ可能 */
-    }
+    /* ← ここから下を追加/修正 */
+textarea#entry-text {
+  width: 100%;         /* 親要素幅に合わせて初期表示をフルサイズに */
+  min-height: 200px;   /* 縦の最小高さ */
+  max-height: 400px;   /* 縦の最大高さ */
+  resize: both;        /* 縦横 両方向にリサイズ可能 */
+}
     /* ← ここまで追加/修正 */
 
     .category-btn, .dest-btn {
