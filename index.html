@@ -2,408 +2,107 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LifeDashboard with Notes</title>
-  <!-- Bulma CSS -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
-  />
-  <!-- Markdown パーサー -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markdownエディタ（タブ切替式）</title>
   <style>
-    :root {
-      --bg: #ffffff;
-      --fg: #222222;
-      --primary: #3273dc;
-      --input-bg: #f5f5f5;
-      --menu-bg: #f0f0f0;
-    }
-    [data-theme="dark"] {
-      --bg: #121212;
-      --fg: #e0e0e0;
-      --primary: #209cee;
-      --input-bg: #1f1f1f;
-      --menu-bg: #1a1a1a;
-    }
-    html, body {
-      margin: 0; padding: 0;
-      background-color: var(--bg);
-      color: var(--fg);
-      height: 100%;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    .navbar, .section { background-color: var(--bg); }
-    .button.is-primary {
-      background-color: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-    }
-    input.input, textarea {
-      background-color: var(--input-bg);
-      color: var(--fg);
-      border: 1px solid #ccc;
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
     }
 
-    /* 親コンテナの幅制限を解除 */
-    .container {
-      max-width: none;
-      padding: 1.5rem;
-    }
-
-    /* 新規入力エリア＋プレビュー配置 */
-    .entry-area {
+    .tab-buttons {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-    }
-    textarea#entry-text {
-      flex: 1;
-      height: 200px;       /* 初期縦幅 */
-      min-height: 100px;
-      resize: both;        /* 縦横リサイズ可 */
-      overflow: hidden;    /* オートグロウ時に不要なスクロールバーを消す */
-      padding: 0.75em;
-    }
-    #preview {
-      flex: 1;
-      background-color: var(--input-bg);
-      color: var(--fg);
-      border: 1px solid #ccc;
-      padding: 0.75em;
-      overflow-y: auto;
-    }
-
-    .category-btn, .dest-btn { margin: 0.2rem; }
-    .category-btn.is-active, .dest-btn.is-active {
-      background-color: var(--primary);
-      color: #fff;
-    }
-
-    .memo-item {
-      padding: 1rem 0;
       border-bottom: 1px solid #ccc;
-    }
-    .memo-item:last-child { border-bottom: none; }
-    .memo-item h2 {
-      margin-bottom: 0.5rem;
-      font-size: 1.1rem;
-    }
-    .memo-item .delete-btn {
-      float: right;
-      background: transparent;
-      border: none;
-      color: var(--primary);
-      cursor: pointer;
-      font-size: 1.2rem;
+      background: #fff;
     }
 
-    /* サイドメニュー */
-    #sidebar {
-      position: fixed; top: 0; left: 0;
-      width: 220px; height: 100%;
-      background-color: var(--menu-bg);
-      transform: translateX(-100%);
-      transition: transform 0.3s;
-      padding: 1rem; box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      z-index: 1000; overflow-y: auto;
+    .tab-buttons button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: #eee;
+      cursor: pointer;
+      font-weight: bold;
     }
-    #sidebar.open { transform: translateX(0); }
-    #sidebar .menu-button { margin-bottom: 0.5rem; width: 100%; }
-    #menu-toggle {
-      background: transparent; border: none;
-      font-size: 1.5rem; cursor: pointer;
-      color: var(--primary);
+
+    .tab-buttons button.active {
+      background: #fff;
+      border-bottom: 2px solid #007acc;
+      color: #007acc;
+    }
+
+    .tab-content {
+      padding: 16px;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    textarea {
+      width: 100%;
+      height: 60vh;
+      font-size: 16px;
+      padding: 12px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    .preview {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 12px;
+      min-height: 60vh;
+      overflow-y: auto;
     }
   </style>
 </head>
-<body data-theme="light">
-  <!-- サイドメニュー -->
-  <aside id="sidebar">
-    <h2 class="title is-5">メニュー</h2>
-    <button id="theme-menu" class="button is-primary menu-button">テーマ切替</button>
-    <button id="clear-menu" class="button menu-button">全エントリ消去</button>
-    <button id="export-json" class="button menu-button">JSONダウンロード</button>
-    <button id="export-md" class="button menu-button">Markdownダウンロード</button>
-    <button id="export-txt" class="button menu-button">TXTダウンロード</button>
-    <label for="import-file" class="button menu-button">JSONインポート</label>
-    <input type="file" id="import-file" accept="application/json" style="display:none"/>
-    <button id="close-menu" class="button menu-button">閉じる</button>
-  </aside>
+<body>
+  <div class="tab-buttons">
+    <button id="tab-input" class="active">📝 入力</button>
+    <button id="tab-preview">👁 プレビュー</button>
+  </div>
 
-  <!-- ナビゲーション -->
-  <nav class="navbar">
-    <div class="navbar-brand">
-      <button id="menu-toggle"><span class="icon">☰</span></button>
-      <span class="navbar-item title is-4">LifeDashboard</span>
-    </div>
-  </nav>
+  <div id="content-input" class="tab-content active">
+    <textarea id="markdown-input" placeholder="ここにMarkdownを書いてください..."></textarea>
+  </div>
 
-  <!-- メインコンテンツ -->
-  <section class="section">
-    <div class="container">
-      <!-- カテゴリ選択 -->
-      <h2 class="subtitle is-5">カテゴリ選択</h2>
-      <div id="categories" class="buttons"></div>
+  <div id="content-preview" class="tab-content">
+    <div id="markdown-preview" class="preview"></div>
+  </div>
 
-      <!-- 保存方法選択 -->
-      <h2 class="subtitle is-5">保存方法</h2>
-      <div id="destinations" class="buttons"></div>
-
-      <!-- 新規エントリ -->
-      <h2 class="subtitle is-5">新規エントリ</h2>
-      <div class="entry-area">
-        <textarea id="entry-text" placeholder="ここに記録を入力…"></textarea>
-        <div id="preview"></div>
-      </div>
-      <button id="save-btn" class="button is-primary">保存</button>
-
-      <!-- フィルタ -->
-      <h2 class="subtitle is-5" style="margin-top:1rem;">履歴フィルタ</h2>
-      <div class="field is-grouped">
-        <div class="control">
-          <div class="select">
-            <select id="filter-cat">
-              <option value="">全カテゴリ</option>
-            </select>
-          </div>
-        </div>
-        <div class="control is-expanded">
-          <input id="filter-text" class="input" type="text" placeholder="キーワード検索"/>
-        </div>
-      </div>
-
-      <!-- 履歴 -->
-      <h2 class="subtitle is-5" style="margin-top:1rem;">履歴</h2>
-      <div id="history"></div>
-    </div>
-  </section>
-
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-  (function(){
-    const CATS      = ["日記","勉強","仕事","予定"];
-    const DSTS      = ["localStorage","JSONファイル","TXTファイル"];
-    const THEME_KEY = "ld-theme";
-    const DATA_KEY  = "ld-entries";
-    const DRAFT_KEY = "ld-draft";
+    const tabInput = document.getElementById('tab-input');
+    const tabPreview = document.getElementById('tab-preview');
+    const contentInput = document.getElementById('content-input');
+    const contentPreview = document.getElementById('content-preview');
+    const markdownInput = document.getElementById('markdown-input');
+    const markdownPreview = document.getElementById('markdown-preview');
 
-    let entries = JSON.parse(localStorage.getItem(DATA_KEY) || "[]");
-    let selCat  = CATS[0];
-    let selDst  = DSTS[0];
-
-    // DOM 要素
-    const root       = document.documentElement;
-    const menuToggle = document.getElementById("menu-toggle");
-    const sidebar    = document.getElementById("sidebar");
-    const closeMenu  = document.getElementById("close-menu");
-    const themeMenu  = document.getElementById("theme-menu");
-    const clearMenu  = document.getElementById("clear-menu");
-    const expJson    = document.getElementById("export-json");
-    const expMd      = document.getElementById("export-md");
-    const expTxt     = document.getElementById("export-txt");
-    const importFile = document.getElementById("import-file");
-
-    const catContainer = document.getElementById("categories");
-    const dstContainer = document.getElementById("destinations");
-    const entryText    = document.getElementById("entry-text");
-    const preview      = document.getElementById("preview");
-    const saveBtn      = document.getElementById("save-btn");
-    const filterCat    = document.getElementById("filter-cat");
-    const filterText   = document.getElementById("filter-text");
-    const historyDiv   = document.getElementById("history");
-
-    // サイドメニュー開閉
-    menuToggle.onclick = ()=> sidebar.classList.toggle("open");
-    closeMenu.onclick  = ()=> sidebar.classList.remove("open");
-
-    // テーマ読み込み
-    const savedTheme = localStorage.getItem(THEME_KEY);
-    if (savedTheme) root.setAttribute("data-theme", savedTheme);
-    themeMenu.onclick = ()=>{
-      const cur = root.getAttribute("data-theme") || "light";
-      const nxt = cur==="light" ? "dark" : "light";
-      root.setAttribute("data-theme", nxt);
-      localStorage.setItem(THEME_KEY, nxt);
-      alert(`テーマを${nxt==="dark"?"ダーク":"ライト"}に切替ました。`);
-    };
-
-    // カテゴリ・保存先ボタン生成
-    CATS.forEach(c=>{
-      let b = document.createElement("button");
-      b.className="button category-btn"; b.textContent=c;
-      b.onclick = ()=>{ selCat=c; refreshCats(); };
-      catContainer.appendChild(b);
-      let o = document.createElement("option");
-      o.value=c; o.textContent=c;
-      filterCat.appendChild(o);
+    tabInput.addEventListener('click', () => {
+      tabInput.classList.add('active');
+      tabPreview.classList.remove('active');
+      contentInput.classList.add('active');
+      contentPreview.classList.remove('active');
     });
-    function refreshCats(){
-      document.querySelectorAll(".category-btn")
-        .forEach(b=>b.classList.toggle("is-active", b.textContent===selCat));
-    }
 
-    DSTS.forEach(d=>{
-      let b = document.createElement("button");
-      b.className="button dest-btn"; b.textContent=d;
-      b.onclick = ()=>{ selDst=d; refreshDsts(); };
-      dstContainer.appendChild(b);
+    tabPreview.addEventListener('click', () => {
+      tabPreview.classList.add('active');
+      tabInput.classList.remove('active');
+      contentPreview.classList.add('active');
+      contentInput.classList.remove('active');
+      markdownPreview.innerHTML = marked.parse(markdownInput.value);
     });
-    function refreshDsts(){
-      document.querySelectorAll(".dest-btn")
-        .forEach(b=>b.classList.toggle("is-active", b.textContent===selDst));
-    }
-    refreshCats(); refreshDsts();
 
-    // データ保存
-    function saveData(){
-      localStorage.setItem(DATA_KEY, JSON.stringify(entries));
-    }
-
-    // オートグロウ
-    function autoGrow(el){
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-    }
-
-    // 入力時処理：プレビュー更新＋オートグロウ＋ドラフト保存
-    function onInput(){
-      autoGrow(entryText);
-      preview.innerHTML = marked.parse(entryText.value || "");
-      localStorage.setItem(DRAFT_KEY, entryText.value);
-    }
-    entryText.addEventListener('input', onInput);
-
-    // ドラフトの復元
-    const draft = localStorage.getItem(DRAFT_KEY);
-    if (draft) {
-      entryText.value = draft;
-      onInput();
-    }
-
-    // 新規エントリ追加
-    function addEntry(){
-      const txt = entryText.value.trim();
-      if (!txt) return alert("内容を入力してください");
-      const now = new Date();
-      const e = {
-        id: now.getTime(),
-        category: selCat,
-        dest: selDst,
-        content: txt,
-        date: now.toISOString()
-      };
-      entries.unshift(e);
-      saveData();
-      localStorage.removeItem(DRAFT_KEY);
-      entryText.value = "";
-      preview.innerHTML = "";
-      autoGrow(entryText);
-      renderHistory();
-    }
-    saveBtn.onclick = addEntry;
-    entryText.addEventListener('keydown', e=>{
-      if (e.key==="Enter" && !e.shiftKey) {
-        e.preventDefault();
-        addEntry();
+    markdownInput.addEventListener('input', () => {
+      if (contentPreview.classList.contains('active')) {
+        markdownPreview.innerHTML = marked.parse(markdownInput.value);
       }
     });
-
-    // 履歴描画
-    function renderHistory(){
-      const fCat = filterCat.value;
-      const fTxt = filterText.value.trim();
-      historyDiv.innerHTML = "";
-      let list = entries.filter(e=>
-        (!fCat || e.category===fCat) &&
-        (!fTxt || e.content.includes(fTxt))
-      );
-      if (!list.length) {
-        historyDiv.innerHTML = `<p class="has-text-grey">該当エントリはありません。</p>`;
-        return;
-      }
-      list.forEach(e=>{
-        const div = document.createElement("div");
-        div.className = "memo-item";
-        div.innerHTML = `
-          <h2>${new Date(e.date).toLocaleString()} – ${e.category}｜${e.dest}
-            <button class="delete-btn" data-id="${e.id}">✖</button>
-          </h2>
-          <div>${marked.parse(e.content)}</div>
-        `;
-        historyDiv.appendChild(div);
-      });
-      historyDiv.querySelectorAll(".delete-btn").forEach(btn=>{
-        btn.onclick = ()=>{
-          if (!confirm("このエントリを削除しますか？")) return;
-          const id = +btn.dataset.id;
-          entries = entries.filter(x=>x.id!==id);
-          saveData();
-          renderHistory();
-        };
-      });
-    }
-    filterCat.onchange  = renderHistory;
-    filterText.oninput  = renderHistory;
-
-    // 全消去
-    clearMenu.onclick = ()=>{
-      if (!confirm("全てのエントリを消去しますか？")) return;
-      entries = [];
-      saveData();
-      renderHistory();
-    };
-
-    // ダウンロード用ユーティリティ
-    function download(name, text){
-      const blob = new Blob([text], {type:"text/plain"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = name;
-      a.click();
-    }
-    expJson.onclick = ()=>download("lifedashboard.json", JSON.stringify(entries,null,2));
-    expMd.onclick = ()=>{
-      let md = "# LifeDashboard Export\n\n";
-      entries.forEach(e=>{
-        md += `## ${new Date(e.date).toLocaleString()} – ${e.category}｜${e.dest}\n`;
-        md += e.content + "\n\n";
-      });
-      download("lifedashboard.md", md);
-    };
-    expTxt.onclick = ()=>{
-      let txt = "";
-      entries.forEach(e=>{
-        txt += `[${new Date(e.date).toLocaleString()}｜${e.category}｜${e.dest}]\n`;
-        txt += e.content + "\n\n----------------\n\n";
-      });
-      download("lifedashboard.txt", txt);
-    };
-
-    // JSONインポート
-    importFile.onchange = e=>{
-      const f = e.target.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = ()=>{
-        try {
-          const arr = JSON.parse(r.result);
-          if (Array.isArray(arr)) {
-            entries = arr;
-            saveData();
-            renderHistory();
-            alert("インポート完了");
-          } else throw "";
-        } catch {
-          alert("正しい JSON 配列を選択してください");
-        }
-      };
-      r.readAsText(f, "UTF-8");
-      e.target.value = "";
-    };
-
-    // 初回描画
-    renderHistory();
-  })();
   </script>
 </body>
 </html>
