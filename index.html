@@ -5,65 +5,178 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LifeDashboard</title>
 
-  <!-- Bulma CSS フレームワークをCDNで読み込み -->
+  <!-- Bulma CSS フレームワーク -->
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
   />
 
-  <!-- ダーク／ライト用のCSS変数定義 -->
+  <!-- ダーク／ライト用CSS変数 -->
   <style>
     :root {
       --bg: #ffffff;
       --fg: #222222;
       --primary: #3273dc;
+      --input-bg: #f5f5f5;
     }
     [data-theme="dark"] {
       --bg: #121212;
       --fg: #e0e0e0;
       --primary: #209cee;
+      --input-bg: #1f1f1f;
     }
-    body {
+
+    html, body {
       background-color: var(--bg);
       color: var(--fg);
       transition: background-color 0.3s, color 0.3s;
+      height: 100%;
     }
+
+    .navbar, .section {
+      background-color: var(--bg);
+    }
+
     .button.is-primary {
       background-color: var(--primary);
       border-color: var(--primary);
       color: #ffffff;
     }
+
+    input.input {
+      background-color: var(--input-bg);
+      color: var(--fg);
+      border: 1px solid #ccc;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5em 1em;
+      margin-bottom: 0.5em;
+      background: var(--input-bg);
+      border-radius: 4px;
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body data-theme="light">
+
+  <!-- ナビゲーション -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <span class="navbar-item title is-4">LifeDashboard</span>
+    </div>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <button id="theme-toggle" class="button is-primary">
+          ダークモードに切替
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- メインセクション -->
   <section class="section">
     <div class="container">
-      <button id="theme-toggle" class="button is-primary">
-        ダークモードに切替
-      </button>
+
+      <!-- 入力フォーム -->
+      <div class="field has-addons">
+        <div class="control is-expanded">
+          <input id="memo-input" class="input" type="text" placeholder="メモを入力…" />
+        </div>
+        <div class="control">
+          <button id="add-btn" class="button is-primary">追加</button>
+        </div>
+      </div>
+
+      <!-- メモリスト -->
+      <div id="memo-list"></div>
     </div>
   </section>
 
-  <!-- 切替ロジック -->
+  <!-- スクリプト -->
   <script>
-    const btn = document.getElementById("theme-toggle");
-    const key = "theme";
-    const root = document.documentElement;
+    const themeKey = "dashboard-theme"
+    const memoKey  = "dashboard-memos"
 
-    // ページ読み込み時にlocalStorageの値を反映
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      root.setAttribute("data-theme", saved);
-      btn.textContent = saved === "dark" ? "ライトモードに切替" : "ダークモードに切替";
+    const root  = document.documentElement
+    const btn   = document.getElementById("theme-toggle")
+    const input = document.getElementById("memo-input")
+    const addBtn= document.getElementById("add-btn")
+    const list  = document.getElementById("memo-list")
+
+    // テーマの初期化
+    const savedTheme = localStorage.getItem(themeKey)
+    if (savedTheme) {
+      root.setAttribute("data-theme", savedTheme)
+      btn.textContent = savedTheme === "dark" ? "ライトモードに切替" : "ダークモードに切替"
     }
 
     btn.addEventListener("click", () => {
-      const current = root.getAttribute("data-theme") || "light";
-      const next = current === "light" ? "dark" : "light";
-      root.setAttribute("data-theme", next);
-      localStorage.setItem(key, next);
-      btn.textContent = next === "dark" ? "ライトモードに切替" : "ダークモードに切替";
-    });
+      const current = root.getAttribute("data-theme") || "light"
+      const next    = current === "light" ? "dark" : "light"
+      root.setAttribute("data-theme", next)
+      localStorage.setItem(themeKey, next)
+      btn.textContent = next === "dark" ? "ライトモードに切替" : "ダークモードに切替"
+    })
+
+    // メモの読み込み・描画
+    let memos = JSON.parse(localStorage.getItem(memoKey) || "[]")
+
+    function renderMemos() {
+      list.innerHTML = ""
+      if (memos.length === 0) {
+        list.innerHTML = `<p class="has-text-grey">メモはまだありません。</p>`
+        return
+      }
+      memos.forEach((text, i) => {
+        const item = document.createElement("div")
+        item.className = "list-item"
+        item.innerHTML = `
+          <span>${text}</span>
+          <button class="delete-btn" data-index="${i}">🗑️</button>
+        `
+        list.appendChild(item)
+      })
+      // 削除ボタンイベント
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const idx = e.currentTarget.dataset.index
+          memos.splice(idx, 1)
+          saveAndRender()
+        })
+      })
+    }
+
+    // 保存して再描画
+    function saveAndRender() {
+      localStorage.setItem(memoKey, JSON.stringify(memos))
+      renderMemos()
+    }
+
+    // 追加ボタン or Enterキーでメモを追加
+    addBtn.addEventListener("click", () => {
+      const val = input.value.trim()
+      if (!val) return
+      memos.push(val)
+      input.value = ""
+      saveAndRender()
+    })
+    input.addEventListener("keypress", e => {
+      if (e.key === "Enter") addBtn.click()
+    })
+
+    // 初回描画
+    renderMemos()
   </script>
+
 </body>
 </html>
