@@ -1,121 +1,167 @@
-import SwiftUI
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>LifeDashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: sans-serif; margin:0; padding:0; }
+    header { background:#2c3e50; color:white; padding:1rem; text-align:center; }
+    main { padding:1rem; max-width:800px; margin:0 auto; }
+    .btn { padding:0.5rem 1rem; margin:0.2rem; border:none; border-radius:4px; cursor:pointer; }
+    .btn-save { background:#27ae60; color:white; }
+    .btn-export { background:#2980b9; color:white; }
+    .category-btn { background:#ecf0f1; }
+    .category-btn.active { background:#3498db; color:white; }
+    textarea { width:100%; height:120px; padding:0.5rem; }
+    .entry { border-bottom:1px solid #ddd; padding:0.5rem 0; }
+    .filters, .exports { margin:1rem 0; }
+    .filters input, .filters select { padding:0.5rem; margin-right:0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LifeDashboard</h1>
+  </header>
+  <main>
+    <!-- 新規エントリ -->
+    <section>
+      <h2>新規記録</h2>
+      <div id="categories"></div>
+      <textarea id="content" placeholder="ここに記録を入力…"></textarea>
+      <button id="saveBtn" class="btn btn-save">保存</button>
+    </section>
 
-// MARK: - モデル定義
+    <!-- フィルタ -->
+    <section class="filters">
+      <h2>履歴フィルタ</h2>
+      <select id="filterCategory">
+        <option value="">全カテゴリ</option>
+      </select>
+      <input id="filterText" type="text" placeholder="キーワード検索" />
+    </section>
 
-/// 記録のカテゴリ
-enum Category: String, CaseIterable, Identifiable {
-    case diary    = "日記"
-    case study    = "勉強"
-    case work     = "仕事"
-    case schedule = "予定"
-    
-    var id: String { rawValue }
-}
+    <!-- 履歴表示 -->
+    <section>
+      <h2>履歴</h2>
+      <div id="history"></div>
+    </section>
 
-/// データ保存先
-enum SaveDestination: String, CaseIterable, Identifiable {
-    case local   = "ローカル"
-    case iCloud  = "iCloud"
-    case dropbox = "Dropbox"
-    
-    var id: String { rawValue }
-}
+    <!-- エクスポート -->
+    <section class="exports">
+      <h2>エクスポート</h2>
+      <button id="expJson"  class="btn btn-export">JSON ダウンロード</button>
+      <button id="expMd"    class="btn btn-export">Markdown ダウンロード</button>
+      <button id="expTxt"   class="btn btn-export">TXT ダウンロード</button>
+    </section>
+  </main>
 
-// MARK: - ViewModel
+  <script>
+  (function(){
+    // モデル定義
+    const CATEGORIES = ["日記","勉強","仕事","予定"];
+    let entries = JSON.parse(localStorage.getItem("ldEntries")||"[]");
 
-final class LifeDashboardViewModel: ObservableObject {
-    @Published var selectedCategory: Category    = .diary
-    @Published var saveDestination: SaveDestination = .local
-    @Published var entryText: String             = ""
-    
-    /// 保存アクション（例）
-    func saveEntry() {
-        switch saveDestination {
-        case .local:
-            saveLocally()
-        case .iCloud:
-            saveToICloud()
-        case .dropbox:
-            saveToDropbox()
-        }
+    // DOM 要素
+    const el = {
+      categories: document.getElementById("categories"),
+      content:    document.getElementById("content"),
+      saveBtn:    document.getElementById("saveBtn"),
+      history:    document.getElementById("history"),
+      filterCat:  document.getElementById("filterCategory"),
+      filterText: document.getElementById("filterText"),
+      expJson:    document.getElementById("expJson"),
+      expMd:      document.getElementById("expMd"),
+      expTxt:     document.getElementById("expTxt"),
+    };
+    let selectedCat = CATEGORIES[0];
+
+    // カテゴリボタン生成
+    CATEGORIES.forEach(cat=>{
+      let btn = document.createElement("button");
+      btn.textContent = cat;
+      btn.className = "btn category-btn";
+      btn.onclick = ()=>{
+        selectedCat = cat;
+        refreshCategories();
+      };
+      el.categories.appendChild(btn);
+      // フィルタ用セレクトにも追加
+      let opt = document.createElement("option");
+      opt.value = cat;
+      opt.textContent = cat;
+      el.filterCat.appendChild(opt);
+    });
+    function refreshCategories(){
+      Array.from(el.categories.children).forEach(b=>{
+        b.classList.toggle("active", b.textContent===selectedCat);
+      });
     }
-    
-    private func saveLocally() {
-        // Core Data / Realm などローカル保存ロジック
-        print("ローカル保存: [\(selectedCategory.rawValue)] \(entryText)")
-    }
-    
-    private func saveToICloud() {
-        // CloudKit 連携ロジック
-        print("iCloud保存: [\(selectedCategory.rawValue)] \(entryText)")
-    }
-    
-    private func saveToDropbox() {
-        // Dropbox API 連携ロジック
-        print("Dropbox保存: [\(selectedCategory.rawValue)] \(entryText)")
-    }
-}
+    refreshCategories();
 
-// MARK: - View
+    // エントリ保存
+    el.saveBtn.onclick = ()=>{
+      let text = el.content.value.trim();
+      if(!text) return alert("内容を入力してください");
+      entries.push({ id:Date.now(), category:selectedCat, content:text, date:new Date().toISOString() });
+      entries.sort((a,b)=>b.id - a.id);
+      localStorage.setItem("ldEntries", JSON.stringify(entries));
+      el.content.value = "";
+      renderHistory();
+    };
 
-struct LifeDashboardView: View {
-    @StateObject private var vm = LifeDashboardViewModel()
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            
-            // 1. カテゴリ選択セグメント
-            Picker(selection: $vm.selectedCategory, label: Text("カテゴリ")) {
-                ForEach(Category.allCases) { category in
-                    Text(category.rawValue).tag(category)
-                }
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            
-            // 2. 保存方法選択セグメント
-            Picker(selection: $vm.saveDestination, label: Text("保存先")) {
-                ForEach(SaveDestination.allCases) { dest in
-                    Text(dest.rawValue).tag(dest)
-                }
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            
-            // 3. 書き込みエリア
-            VStack(alignment: .leading, spacing: 8) {
-                Text(vm.selectedCategory.rawValue)
-                    .font(.headline)
-                
-                TextEditor(text: $vm.entryText)
-                    .padding(8)
-                    .frame(maxHeight: .infinity)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(8)
-            }
-            
-            // 任意: 保存ボタン
-            Button(action: vm.saveEntry) {
-                Text("保存")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-            
-        }
-        .padding()
+    // 履歴描画
+    function renderHistory(){
+      let fCat = el.filterCat.value;
+      let fTxt = el.filterText.value.trim();
+      el.history.innerHTML = "";
+      entries.forEach(e=>{
+        if(fCat && e.category!==fCat) return;
+        if(fTxt && !e.content.includes(fTxt)) return;
+        let box = document.createElement("div");
+        box.className = "entry";
+        box.innerHTML = `
+          <strong>${e.category}</strong>
+          <span style="float:right">${new Date(e.date).toLocaleString()}</span>
+          <p>${e.content.replace(/\n/g,"<br>")}</p>
+        `;
+        el.history.appendChild(box);
+      });
     }
-}
+    el.filterCat.onchange = renderHistory;
+    el.filterText.oninput = renderHistory;
 
-// MARK: - Preview
-
-struct LifeDashboardView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            LifeDashboardView()
-                .preferredColorScheme(.light)
-            LifeDashboardView()
-                .preferredColorScheme(.dark)
-        }
+    // エクスポート共通
+    function download(filename, text){
+      let a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([text],{type:"text/plain"}));
+      a.download = filename;
+      a.click();
     }
-}
+
+    el.expJson.onclick = ()=> {
+      download("lifedashboard.json", JSON.stringify(entries, null, 2));
+    };
+    el.expMd.onclick = ()=>{
+      let md = "# LifeDashboard Export\n\n";
+      entries.forEach(e=>{
+        md += `## ${e.category} – ${new Date(e.date).toLocaleString()}\n`;
+        md += `${e.content}\n\n---\n\n`;
+      });
+      download("lifedashboard.md", md);
+    };
+    el.expTxt.onclick = ()=>{
+      let txt = "";
+      entries.forEach(e=>{
+        txt += `${e.category} | ${new Date(e.date).toLocaleString()}\n`;
+        txt += `${e.content}\n\n----------------\n\n`;
+      });
+      download("lifedashboard.txt", txt);
+    };
+
+    // 初期レンダー
+    renderHistory();
+  })();
+  </script>
+</body>
+</html>
