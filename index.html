@@ -45,6 +45,14 @@
       color: var(--fg);
       border: 1px solid #ccc;
     }
+    /* ← ここから下を追加/修正 */
+    textarea#entry-text {
+      min-height: 200px;   /* 最小高さを200pxに設定 */
+      max-height: 400px;   /* 最大高さを400pxまで */
+      resize: vertical;    /* 縦方向のみリサイズ可能 */
+    }
+    /* ← ここまで追加/修正 */
+
     .category-btn, .dest-btn {
       margin: 0.2rem;
     }
@@ -114,7 +122,8 @@
 
       <!-- 書き込みエリア -->
       <h2 class="subtitle is-5">新規エントリ</h2>
-      <textarea id="entry-text" rows="4" placeholder="ここに記録を入力…"></textarea>
+      <!-- rows を増やして見た目を広く -->
+      <textarea id="entry-text" rows="8" placeholder="ここに記録を入力…"></textarea>
       <button id="save-btn" class="button is-primary" style="margin-top:0.5rem;">保存</button>
 
       <!-- フィルタ -->
@@ -151,7 +160,7 @@
     let selCat = CATS[0];
     let selDst = DSTS[0];
 
-    // DOM
+    // DOM取得
     const root = document.documentElement;
     const menuToggle = document.getElementById("menu-toggle");
     const sidebar = document.getElementById("sidebar");
@@ -172,10 +181,10 @@
     const historyDiv = document.getElementById("history");
 
     // メニュー開閉
-    menuToggle.onclick = ()=>sidebar.classList.toggle("open");
-    closeMenu.onclick = ()=>sidebar.classList.remove("open");
+    menuToggle.onclick   = ()=>sidebar.classList.toggle("open");
+    closeMenu.onclick   = ()=>sidebar.classList.remove("open");
 
-    // テーマ切替
+    // テーマ読み込み
     const savedTheme = localStorage.getItem(THEME_KEY);
     if(savedTheme){
       root.setAttribute("data-theme", savedTheme);
@@ -188,7 +197,7 @@
       alert(`テーマを${nxt==="dark"?"ダーク":"ライト"}に切替ました。`);
     };
 
-    // カテゴリ＆保存方法ボタン生成
+    // カテゴリ／保存方法ボタン生成
     CATS.forEach(c=>{
       const b = document.createElement("button");
       b.textContent = c; b.className="button category-btn";
@@ -205,6 +214,7 @@
         b.classList.toggle("is-active", b.textContent===selCat);
       });
     }
+
     DSTS.forEach(d=>{
       const b = document.createElement("button");
       b.textContent = d; b.className="button dest-btn";
@@ -220,10 +230,12 @@
     }
     refreshCats(); refreshDsts();
 
-    // データ操作
+    // データ保存
     function saveData(){
       localStorage.setItem(DATA_KEY, JSON.stringify(entries));
     }
+
+    // 新規エントリ追加
     function addEntry(){
       const txt = entryText.value.trim();
       if(!txt) return alert("内容を入力してください");
@@ -236,7 +248,7 @@
       };
       entries.unshift(e);
       saveData();
-      entryText.value="";
+      entryText.value = "";
       renderHistory();
     }
     saveBtn.onclick = addEntry;
@@ -244,11 +256,11 @@
       if(e.key==="Enter" && !e.shiftKey) addEntry();
     };
 
-    // フィルタ＆履歴描画
+    // 履歴描画
     function renderHistory(){
       const fCat = filterCat.value;
       const fTxt = filterText.value.trim();
-      historyDiv.innerHTML="";
+      historyDiv.innerHTML = "";
       let list = entries.filter(e=>{
         return (!fCat||e.category===fCat)
             && (!fTxt||e.content.includes(fTxt));
@@ -267,7 +279,6 @@
         `;
         historyDiv.appendChild(div);
       });
-      // 削除イベント
       historyDiv.querySelectorAll("button[data-id]").forEach(btn=>{
         btn.onclick = ()=>{
           const id = +btn.dataset.id;
@@ -282,14 +293,16 @@
     filterCat.onchange = renderHistory;
     filterText.oninput = renderHistory;
 
-    // メニュー：クリア
+    // メニュー操作：全消去
     clearMenu.onclick = ()=>{
       if(confirm("全てのエントリを消去しますか？")){
-        entries=[]; saveData(); renderHistory();
+        entries = [];
+        saveData();
+        renderHistory();
       }
     };
 
-    // エクスポート共通
+    // エクスポート
     function download(name, text){
       const blob = new Blob([text],{type:"text/plain"});
       const a = document.createElement("a");
@@ -313,7 +326,7 @@
       download("lifedashboard.txt", txt);
     };
 
-    // インポート
+    // JSONインポート
     importFile.onchange = e=>{
       const f = e.target.files[0];
       if(!f) return;
@@ -335,7 +348,7 @@
       e.target.value="";
     };
 
-    // 初期描画
+    // 初回描画
     renderHistory();
   })();
   </script>
