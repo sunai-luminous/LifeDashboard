@@ -74,18 +74,17 @@
       <!-- 共通クラス note-section と data-category 属性で初期化を共通化 -->
       <section id="diary" class="section is-hidden note-section" data-category="diary">
         <h2 class="title is-4">📔 日記</h2>
-        <div class="tabs is-toggle is-fullwidth">
-          <ul>
-            <li class="is-active"><a data-action="write">入力</a></li>
-            <li><a data-action="preview">プレビュー</a></li>
-          </ul>
-        </div>
-        <div class="editor-pane">
-          <textarea class="markdown-editor textarea" rows="12" placeholder="日記をMarkdownで書く..."></textarea>
-        </div>
-        <div class="preview-pane box is-hidden">
-          <div class="markdown-rendered"></div>
-        </div>
+      <div class="container tabs-hidden" id="wrapper">
+  <aside class="tabs">
+    <button id="toggle">☰</button>
+    <div class="tab">Todo</div>
+    <!-- ... -->
+  </aside>
+  <main class="content">
+    <textarea></textarea>
+  </main>
+</div>
+
       </section>
 
       <section id="study" class="section is-hidden note-section" data-category="study">
