@@ -1,58 +1,168 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>シンプル記録アプリ</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: sans-serif; margin:0; padding:0; background:#f0f2f5; }
+    .container { max-width:800px; margin:20px auto; padding:0 10px; }
+    section { background:#fff; border:1px solid #ddd; margin-bottom:20px;
+               padding:15px; border-radius:4px; }
+    section h2 { margin-top:0; }
+    textarea { width:100%; min-height:80px; margin-bottom:8px;
+               padding:8px; box-sizing:border-box; font-size:14px; }
+    .btn-group { display:flex; gap:8px; margin-bottom:12px; }
+    .btn-group button { flex:1; padding:6px 12px; font-size:14px; cursor:pointer; }
+    .history { list-style:none; padding:0; margin:0; }
+    .history li { border-top:1px solid #eee; padding:8px 0; }
+    .timestamp { font-size:12px; color:#666; margin-bottom:4px; }
+    .toast {
+      position: fixed; bottom:20px; left:50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75); color:#fff;
+      padding:8px 16px; border-radius:4px;
+      opacity:0; transition: opacity .3s; z-index:100;
+    }
+    .toast.show { opacity:1; }
+    #debug-panel {
+      background:#272822; color:#f8f8f2; padding:12px;
+      border-radius:4px; margin-top:40px; font-size:13px;
+      overflow-x:auto;
+    }
+    #debug-panel h2 { margin-top:0; font-size:16px; color:#66d9ef; }
+  </style>
 </head>
 <body>
   <div class="container">
-    <!-- セクションの繰り返し -->
-    <section id="diary" class="entry-section">
-      <h2>日記</h2>
-      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
-      <div class="btn-group">
-        <button class="save-btn">保存</button>
-        <button class="export-md-btn">MD保存</button>
-        <button class="export-json-btn">JSON保存</button>
-      </div>
-      <ul class="history"></ul>
-    </section>
+    <!-- セクションをまとめてループ -->
+    <script>
+      const sections = ['diary','study','work','schedule'];
+      sections.forEach(id => {
+        document.write(`
+          <section id="${id}">
+            <h2>${{'diary':'日記','study':'勉強','work':'仕事','schedule':'予定'}[id]}</h2>
+            <textarea class="editor" placeholder="ここに書いてね…"></textarea>
+            <div class="btn-group">
+              <button class="save-btn">保存</button>
+              <button class="export-md-btn">MD保存</button>
+              <button class="export-json-btn">JSON保存</button>
+            </div>
+            <ul class="history"></ul>
+          </section>
+        `);
+      });
+    </script>
 
-    <section id="study" class="entry-section">
-      <h2>勉強</h2>
-      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
-      <div class="btn-group">
-        <button class="save-btn">保存</button>
-        <button class="export-md-btn">MD保存</button>
-        <button class="export-json-btn">JSON保存</button>
-      </div>
-      <ul class="history"></ul>
-    </section>
-
-    <section id="work" class="entry-section">
-      <h2>仕事</h2>
-      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
-      <div class="btn-group">
-        <button class="save-btn">保存</button>
-        <button class="export-md-btn">MD保存</button>
-        <button class="export-json-btn">JSON保存</button>
-      </div>
-      <ul class="history"></ul>
-    </section>
-
-    <section id="schedule" class="entry-section">
-      <h2>予定</h2>
-      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
-      <div class="btn-group">
-        <button class="save-btn">保存</button>
-        <button class="export-md-btn">MD保存</button>
-        <button class="export-json-btn">JSON保存</button>
-      </div>
-      <ul class="history"></ul>
+    <!-- デバッグパネル -->
+    <section id="debug-panel">
+      <h2>デバッグパネル</h2>
+      <pre id="debug-output"></pre>
     </section>
   </div>
 
-  <script src="app.js"></script>
+  <script>
+    // helper: escape HTML
+    function escapeHTML(str) {
+      return str.replace(/&/g,'&amp;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;');
+    }
+
+    // download helper
+    function download(content, filename, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Toast
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => {
+        t.classList.remove('show');
+        setTimeout(() => t.remove(), 300);
+      }, 2000);
+    }
+
+    // localStorage 読み書き
+    function getItems(sec) {
+      return JSON.parse(localStorage.getItem(sec) || '[]');
+    }
+    function saveItems(sec, items) {
+      localStorage.setItem(sec, JSON.stringify(items));
+    }
+
+    // 保存処理
+    function saveEntry(sec) {
+      const area = document.querySelector(`#${sec} .editor`);
+      const text = area.value.trim();
+      if (!text) return alert('テキストを入力してください');
+      const items = getItems(sec);
+      const now   = new Date();
+      const dt    = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} `
+                  + `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:`
+                  + `${String(now.getSeconds()).padStart(2,'0')}`;
+      items.push({ datetime: dt, text });
+      saveItems(sec, items);
+      area.value = '';
+      renderSection(sec);
+      updateDebugPanel();
+      showToast('保存しました');
+    }
+
+    // 各種エクスポート
+    function exportMarkdown(sec, items) {
+      let md = `## ${sec}\n\n`;
+      items.forEach(({datetime,text}) => {
+        md += `- [${datetime}] ${text.replace(/\n/g,' ')}\n`;
+      });
+      download(md, `${sec}.md`, 'text/markdown');
+    }
+    function exportJSON(sec, items) {
+      download(JSON.stringify(items,null,2), `${sec}.json`, 'application/json');
+    }
+
+    // レンダリング
+    function renderSection(sec) {
+      const ul    = document.querySelector(`#${sec} .history`);
+      const items = getItems(sec).slice().reverse();
+      ul.innerHTML = items.map(it => `
+        <li><div class="timestamp">${it.datetime}</div>
+            <pre>${escapeHTML(it.text)}</pre>
+        </li>
+      `).join('');
+    }
+
+    // デバッグパネル更新
+    function updateDebugPanel() {
+      const out = document.getElementById('debug-output');
+      const state = {};
+      sections.forEach(sec => state[sec] = getItems(sec));
+      out.textContent = JSON.stringify(state, null, 2);
+    }
+
+    // 初期化
+    document.addEventListener('DOMContentLoaded', () => {
+      sections.forEach(sec => {
+        renderSection(sec);
+        document.querySelector(`#${sec} .save-btn`)
+          .addEventListener('click', () => saveEntry(sec));
+        document.querySelector(`#${sec} .export-md-btn`)
+          .addEventListener('click', () => exportMarkdown(sec, getItems(sec)));
+        document.querySelector(`#${sec} .export-json-btn`)
+          .addEventListener('click', () => exportJSON(sec, getItems(sec)));
+      });
+      updateDebugPanel();
+    });
+  </script>
 </body>
 </html>
