@@ -5,88 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>4カラム + トグル付きレイアウト</title>
   <style>
-    /* リセット＆基本設定 */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      height: 100%;
-      font-family: sans-serif;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; font-family:sans-serif; }
 
-    /* グリッドレイアウト */
     .container {
       display: grid;
       grid-template-columns: 1fr 3fr;
       height: 100vh;
       transition: grid-template-columns 0.2s ease;
     }
-    /* タブを隠した状態 */
     .container.tabs-hidden {
       grid-template-columns: 0 1fr;
     }
 
-    /* タブ群 */
     .tabs {
-      background: #f5f5f5;
-      overflow: hidden;
-      position: relative;
-      transition: width 0.2s ease;
+      background:#f5f5f5;
+      overflow:hidden;
+      position:relative;
+      transition:width 0.2s ease;
     }
-    .tabs .toggle-btn {
-      position: absolute;
-      top: 10px;
-      right: -42px;
-      width: 38px;
-      height: 38px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1.2rem;
-      cursor: pointer;
+    .toggle-btn {
+      position:absolute;
+      top:10px;
+      right:-42px;
+      width:38px; height:38px;
+      background:#fff;
+      border:1px solid #ccc;
+      border-radius:4px;
+      font-size:1.2rem;
+      cursor:pointer;
     }
-    .tabs .tab {
-      padding: 1rem;
-      cursor: pointer;
-      border-bottom: 1px solid #ddd;
+    .tab {
+      padding:1rem;
+      cursor:pointer;
+      border-bottom:1px solid #ddd;
     }
-    .tabs .tab:hover {
-      background: #e0e0e0;
-    }
+    .tab:hover { background:#e0e0e0; }
 
-    /* コンテンツ */
     .content {
-      padding: 1rem;
+      padding:1rem;
     }
-    .content textarea {
-      width: 100%;
-      height: 100%;
-      padding: 1rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      resize: none;
+    textarea {
+      width:100%;
+      height:100%;
+      padding:1rem;
+      font-size:1rem;
+      border:1px solid #ccc;
+      border-radius:4px;
+      resize:none;
     }
 
-    /* スマホ時にタブをさらに小さくしたい場合 */
-    @media (max-width: 600px) {
-      .container {
-        grid-template-columns: 0.8fr 4.2fr;
-      }
-      .tabs .tab {
-        font-size: 0.9rem;
-        padding: 0.6rem 0.4rem;
-      }
+    @media (max-width:600px) {
+      .container { grid-template-columns:0.8fr 4.2fr; }
+      .tab { font-size:0.9rem; padding:0.6rem 0.4rem; }
     }
   </style>
 </head>
 <body>
--  <div id="wrapper" class="container tabs-hidden">
-+  <div id="wrapper" class="container">
 
-    <!-- 左側のタブ -->
+  <!-- 初期状態でタブ表示 -->
+  <div id="wrapper" class="container">
     <aside class="tabs">
       <button id="toggle" class="toggle-btn">☰</button>
       <div class="tab">Todo</div>
@@ -94,18 +72,15 @@
       <div class="tab">予定</div>
       <div class="tab">メモ</div>
     </aside>
-
-    <!-- 右側の書き込みエリア -->
     <main class="content">
       <textarea placeholder="ここに書き込み…"></textarea>
     </main>
   </div>
 
   <script>
-    (function() {
+    (function(){
       const wrapper = document.getElementById('wrapper');
       const btn = document.getElementById('toggle');
-
       btn.addEventListener('click', () => {
         wrapper.classList.toggle('tabs-hidden');
       });
