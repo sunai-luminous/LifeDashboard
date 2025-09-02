@@ -9,7 +9,7 @@
     href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
   />
   <style>
-    /* Layout */
+    /* ダッシュボード全体レイアウト */
     .dashboard {
       display: flex;
       height: 100vh;
@@ -24,26 +24,24 @@
       overflow-y: auto;
       background-color: #f9f9f9;
     }
-
-    /* Active tab underline */
+    /* アクティブタブの下線 */
     .tabs.is-toggle li.is-active a {
       border-bottom-color: #3273dc;
       color: #3273dc;
     }
-
-    /* Markdown rendered styling */
-    #markdown-rendered h1,
-    #markdown-rendered h2,
-    #markdown-rendered h3 {
+    /* Markdownプレビューの基本スタイル */
+    .markdown-rendered h1,
+    .markdown-rendered h2,
+    .markdown-rendered h3 {
       margin-top: 1em;
     }
-    #markdown-rendered ul {
+    .markdown-rendered ul {
       margin-left: 1em;
     }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
+  <!-- ナビゲーションバー -->
   <nav class="navbar is-light" role="navigation">
     <div class="navbar-brand">
       <a class="navbar-item" href="#">📘 LifeDashboard</a>
@@ -51,53 +49,94 @@
   </nav>
 
   <div class="dashboard">
-    <!-- Sidebar -->
+    <!-- サイドバー -->
     <aside class="menu sidebar">
       <p class="menu-label">メニュー</p>
       <ul class="menu-list">
         <li><a class="is-active" data-target="dashboard">ダッシュボード</a></li>
-        <li><a data-target="notes">ノート</a></li>
+        <li><a data-target="diary">日記</a></li>
+        <li><a data-target="study">勉強</a></li>
+        <li><a data-target="work">仕事</a></li>
+        <li><a data-target="schedule">予定</a></li>
         <li><a data-target="settings">設定</a></li>
       </ul>
     </aside>
 
-    <!-- Main Content -->
+    <!-- メインコンテンツ -->
     <main class="content">
-      <!-- Dashboard Section -->
+      <!-- Dashboard セクション -->
       <section id="dashboard" class="section">
         <h2 class="title is-4">🏠 ダッシュボード</h2>
-        <p>ここにダッシュボード概要を表示します。</p>
+        <p>ここに各種ウィジェットや概要を表示します。</p>
       </section>
 
-      <!-- Notes Section -->
-      <section id="notes" class="section is-hidden">
-        <h2 class="title is-4">📝 ノート</h2>
-
-        <!-- タブ切り替え -->
+      <!-- ノート系セクション：日記・勉強・仕事・予定 -->
+      <!-- 共通クラス note-section と data-category 属性で初期化を共通化 -->
+      <section id="diary" class="section is-hidden note-section" data-category="diary">
+        <h2 class="title is-4">📔 日記</h2>
         <div class="tabs is-toggle is-fullwidth">
           <ul>
-            <li class="is-active" id="tab-write"><a>入力</a></li>
-            <li id="tab-preview"><a>プレビュー</a></li>
+            <li class="is-active"><a data-action="write">入力</a></li>
+            <li><a data-action="preview">プレビュー</a></li>
           </ul>
         </div>
-
-        <!-- 入力エリア -->
-        <div id="editor-pane">
-          <textarea
-            id="markdown-editor"
-            class="textarea"
-            rows="12"
-            placeholder="Markdownで記述..."
-          ></textarea>
+        <div class="editor-pane">
+          <textarea class="markdown-editor textarea" rows="12" placeholder="日記をMarkdownで書く..."></textarea>
         </div>
-
-        <!-- プレビューエリア -->
-        <div id="preview-pane" class="box is-hidden">
-          <div id="markdown-rendered"></div>
+        <div class="preview-pane box is-hidden">
+          <div class="markdown-rendered"></div>
         </div>
       </section>
 
-      <!-- Settings Section -->
+      <section id="study" class="section is-hidden note-section" data-category="study">
+        <h2 class="title is-4">📚 勉強</h2>
+        <div class="tabs is-toggle is-fullwidth">
+          <ul>
+            <li class="is-active"><a data-action="write">入力</a></li>
+            <li><a data-action="preview">プレビュー</a></li>
+          </ul>
+        </div>
+        <div class="editor-pane">
+          <textarea class="markdown-editor textarea" rows="12" placeholder="勉強メモをMarkdownで..."></textarea>
+        </div>
+        <div class="preview-pane box is-hidden">
+          <div class="markdown-rendered"></div>
+        </div>
+      </section>
+
+      <section id="work" class="section is-hidden note-section" data-category="work">
+        <h2 class="title is-4">💼 仕事</h2>
+        <div class="tabs is-toggle is-fullwidth">
+          <ul>
+            <li class="is-active"><a data-action="write">入力</a></li>
+            <li><a data-action="preview">プレビュー</a></li>
+          </ul>
+        </div>
+        <div class="editor-pane">
+          <textarea class="markdown-editor textarea" rows="12" placeholder="仕事のタスクやログを..."></textarea>
+        </div>
+        <div class="preview-pane box is-hidden">
+          <div class="markdown-rendered"></div>
+        </div>
+      </section>
+
+      <section id="schedule" class="section is-hidden note-section" data-category="schedule">
+        <h2 class="title is-4">📅 予定</h2>
+        <div class="tabs is-toggle is-fullwidth">
+          <ul>
+            <li class="is-active"><a data-action="write">入力</a></li>
+            <li><a data-action="preview">プレビュー</a></li>
+          </ul>
+        </div>
+        <div class="editor-pane">
+          <textarea class="markdown-editor textarea" rows="12" placeholder="予定やスケジュールを..."></textarea>
+        </div>
+        <div class="preview-pane box is-hidden">
+          <div class="markdown-rendered"></div>
+        </div>
+      </section>
+
+      <!-- 設定セクション -->
       <section id="settings" class="section is-hidden">
         <h2 class="title is-4">⚙️ 設定</h2>
         <p>設定項目をここに追加します。</p>
@@ -105,73 +144,66 @@
     </main>
   </div>
 
-  <!-- marked.js for Markdown → HTML -->
+  <!-- marked.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    // サイドバーメニュー切り替え
+    // サイドバー切り替え
     document.querySelectorAll('.menu-list a').forEach(link => {
       link.addEventListener('click', () => {
-        // 各リンクのアクティブ化制御
-        document.querySelectorAll('.menu-list a').forEach(el =>
-          el.classList.remove('is-active')
-        );
+        document.querySelectorAll('.menu-list a').forEach(el => el.classList.remove('is-active'));
         link.classList.add('is-active');
-
-        // セクション表示切り替え
-        const target = link.getAttribute('data-target');
-        document.querySelectorAll('main .section').forEach(sec =>
-          sec.classList.add('is-hidden')
-        );
-        document.getElementById(target).classList.remove('is-hidden');
-
-        // 現在セクションを保存
-        localStorage.setItem('lifeDashboardSection', target);
+        const tgt = link.dataset.target;
+        document.querySelectorAll('main .section').forEach(sec => sec.classList.add('is-hidden'));
+        document.getElementById(tgt).classList.remove('is-hidden');
+        localStorage.setItem('lifeDashboardSection', tgt);
       });
     });
 
-    // Markdownノート部品
-    const tabWrite = document.getElementById('tab-write');
-    const tabPreview = document.getElementById('tab-preview');
-    const editorPane = document.getElementById('editor-pane');
-    const previewPane = document.getElementById('preview-pane');
-    const markdownEditor = document.getElementById('markdown-editor');
-    const markdownRendered = document.getElementById('markdown-rendered');
+    // ノート系（共通ロジック）
+    document.querySelectorAll('.note-section').forEach(sec => {
+      const category = sec.dataset.category;
+      const tabs = sec.querySelectorAll('.tabs ul li');
+      const writeTab = tabs[0], previewTab = tabs[1];
+      const editorPane = sec.querySelector('.editor-pane');
+      const previewPane = sec.querySelector('.preview-pane');
+      const editor = sec.querySelector('.markdown-editor');
+      const rendered = sec.querySelector('.markdown-rendered');
 
-    // タブ切り替え処理
-    tabWrite.addEventListener('click', () => {
-      tabWrite.classList.add('is-active');
-      tabPreview.classList.remove('is-active');
-      editorPane.classList.remove('is-hidden');
-      previewPane.classList.add('is-hidden');
+      // タブクリック
+      writeTab.addEventListener('click', () => {
+        writeTab.classList.add('is-active');
+        previewTab.classList.remove('is-active');
+        editorPane.classList.remove('is-hidden');
+        previewPane.classList.add('is-hidden');
+      });
+      previewTab.addEventListener('click', () => {
+        previewTab.classList.add('is-active');
+        writeTab.classList.remove('is-active');
+        editorPane.classList.add('is-hidden');
+        previewPane.classList.remove('is-hidden');
+        rendered.innerHTML = marked.parse(editor.value);
+      });
+
+      // 自動保存＆プレビュー同期
+      editor.addEventListener('input', () => {
+        localStorage.setItem(`lifeDashboardNote-${category}`, editor.value);
+        if (!previewPane.classList.contains('is-hidden')) {
+          rendered.innerHTML = marked.parse(editor.value);
+        }
+      });
+
+      // 初期ロード時の復元
+      const saved = localStorage.getItem(`lifeDashboardNote-${category}`);
+      if (saved) editor.value = saved;
     });
 
-    tabPreview.addEventListener('click', () => {
-      tabPreview.classList.add('is-active');
-      tabWrite.classList.remove('is-active');
-      editorPane.classList.add('is-hidden');
-      previewPane.classList.remove('is-hidden');
-      markdownRendered.innerHTML = marked.parse(markdownEditor.value);
-    });
-
-    // 入力自動保存＆プレビュー反映
-    markdownEditor.addEventListener('input', () => {
-      localStorage.setItem('lifeDashboardNote', markdownEditor.value);
-      if (!previewPane.classList.contains('is-hidden')) {
-        markdownRendered.innerHTML = marked.parse(markdownEditor.value);
-      }
-    });
-
-    // ページロード時に保存データを復元
+    // 起動時に最後のセクションを復元
     window.addEventListener('DOMContentLoaded', () => {
-      // 最後に表示していたセクション
-      const savedSection = localStorage.getItem('lifeDashboardSection');
-      if (savedSection) {
-        document.querySelector(`.menu-list a[data-target="${savedSection}"]`).click();
+      const last = localStorage.getItem('lifeDashboardSection');
+      if (last) {
+        const link = document.querySelector(`.menu-list a[data-target="${last}"]`);
+        if (link) link.click();
       }
-
-      // ノート内容の復元
-      const savedNote = localStorage.getItem('lifeDashboardNote');
-      if (savedNote) markdownEditor.value = savedNote;
     });
   </script>
 </body>
