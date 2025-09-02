@@ -2,293 +2,549 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>LifeDashboard v3.6</title>
+  <title>LifeDashboard - 改良版</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 2em;
-      background: #f9f9f9;
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin:0; padding:0; background:#f5f7fa; }
+    .container { max-width:1000px; margin:20px auto; padding:0 20px; }
+    
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { color: #2d3748; font-size: 2.5em; margin-bottom: 10px; }
+    .header p { color: #718096; font-size: 1.1em; }
+    
+    .controls {
+      display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;
+      background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      margin-bottom: 0.5em;
+    .controls input {
+      flex: 1; padding: 12px; font-size: 14px; min-width: 200px;
+      border: 2px solid #e2e8f0; border-radius: 8px; transition: all 0.3s;
     }
-    p {
-      margin-top: 0;
-      margin-bottom: 2em;
+    .controls input:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); }
+    
+    section { 
+      background: white; border: none; margin-bottom: 25px;
+      padding: 25px; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);
     }
-    .global-controls {
-      margin-bottom: 1.5em;
+    section h2 { 
+      margin-top: 0; color: #2d3748; font-size: 1.5em; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
     }
-    .global-controls button {
-      margin-right: 0.5em;
-      padding: 0.5em 1em;
-      cursor: pointer;
+    
+    .section-icon {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;
     }
-    .filters {
-      margin-bottom: 2em;
+    .diary-icon { background: #4299e1; }
+    .study-icon { background: #48bb78; }
+    .work-icon { background: #ed8936; }
+    .schedule-icon { background: #9f7aea; }
+    
+    textarea { 
+      width: 100%; min-height: 100px; margin-bottom: 15px;
+      padding: 15px; box-sizing: border-box; font-size: 14px;
+      border: 2px solid #e2e8f0; border-radius: 8px; resize: vertical;
+      font-family: inherit; transition: all 0.3s;
     }
-    .filters input {
-      padding: 0.5em;
-      margin-right: 0.5em;
-      width: 180px;
+    textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); }
+    
+    .tag-input {
+      width: 100%; padding: 12px; font-size: 13px;
+      margin-bottom: 15px; box-sizing: border-box;
+      border: 2px solid #e2e8f0; border-radius: 8px; transition: all 0.3s;
     }
-    .section {
-      background: #fff;
-      padding: 1em;
-      margin-bottom: 2em;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    .tag-input:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); }
+    
+    .btn-group { 
+      display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;
     }
-    .section h2 {
-      margin-top: 0;
+    .btn-group button {
+      padding: 12px 20px; font-size: 14px; cursor: pointer; border: none;
+      border-radius: 8px; font-weight: 600; transition: all 0.3s;
+      color: white; text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .section textarea {
-      width: 300px;
-      height: 60px;
-      padding: 0.5em;
-      font-size: 0.95em;
-      resize: vertical;
-      margin-bottom: 0.5em;
+    .save-btn { background: #4299e1; }
+    .save-btn:hover { background: #3182ce; transform: translateY(-1px); }
+    .export-md-btn { background: #48bb78; }
+    .export-md-btn:hover { background: #38a169; transform: translateY(-1px); }
+    .export-json-btn { background: #ed8936; }
+    .export-json-btn:hover { background: #dd6b20; transform: translateY(-1px); }
+    .import-btn { background: #9f7aea; }
+    .import-btn:hover { background: #805ad5; transform: translateY(-1px); }
+    
+    .history { list-style: none; padding: 0; margin: 0; }
+    .history li { 
+      background: #f7fafc; border: 1px solid #e2e8f0; margin-bottom: 15px;
+      padding: 20px; border-radius: 10px; position: relative; transition: all 0.3s;
     }
-    .section .tag-input {
-      width: 300px;
-      height: 28px;
-      padding: 0.25em 0.5em;
-      font-size: 0.85em;
-      margin-bottom: 0.5em;
+    .history li:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
+    
+    .entry-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
     }
-    .section .buttons button {
-      margin-right: 0.5em;
-      padding: 0.5em 1em;
-      cursor: pointer;
+    .timestamp { 
+      font-size: 12px; color: #718096; font-weight: 600;
+      background: #edf2f7; padding: 4px 8px; border-radius: 4px;
     }
-    .history .entry {
-      border-top: 1px solid #ddd;
-      padding: 1em 0;
+    .entry-actions {
+      display: flex; gap: 8px;
     }
-    .entry .timestamp {
-      font-size: 0.8em;
-      color: #666;
-      margin-bottom: 0.5em;
+    .delete-btn {
+      background: #f56565; color: white; border: none; padding: 6px 10px;
+      border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+      transition: all 0.3s;
     }
-    .entry .tags span {
-      background: #eef;
-      color: #33c;
-      padding: 0.2em 0.5em;
-      margin-right: 0.3em;
-      cursor: pointer;
-      font-size: 0.85em;
+    .delete-btn:hover { background: #e53e3e; transform: scale(1.05); }
+    
+    .tags-container { margin-bottom: 10px; }
+    .badge {
+      display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; padding: 4px 10px; font-size: 11px; border-radius: 20px;
+      margin-right: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    
+    .entry-content {
+      color: #2d3748; font-size: 14px; line-height: 1.6;
+      background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;
+      white-space: pre-wrap; font-family: inherit;
+    }
+    
+    .toast {
+      position: fixed; bottom: 30px; right: 30px; z-index: 1000;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; padding: 15px 25px; border-radius: 10px;
+      font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      opacity: 0; transform: translateY(100px); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    
+    .empty-state {
+      text-align: center; padding: 40px; color: #a0aec0;
+    }
+    .empty-state svg {
+      width: 64px; height: 64px; margin-bottom: 20px; opacity: 0.5;
+    }
+    
+    #debug-panel {
+      background: #1a202c; color: #e2e8f0; padding: 20px;
+      border-radius: 12px; margin-top: 40px; font-size: 13px;
+      overflow-x: auto; font-family: 'Monaco', 'Menlo', monospace;
+    }
+    #debug-panel h2 { margin-top: 0; font-size: 16px; color: #63b3ed; }
+    
+    @media (max-width: 768px) {
+      .container { padding: 0 15px; }
+      .btn-group { flex-direction: column; }
+      .btn-group button { width: 100%; }
+      .controls { flex-direction: column; }
+      .controls input { min-width: auto; }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="header">
+      <h1>📋 LifeDashboard</h1>
+      <p>日記・勉強・仕事・予定を一つの場所で管理</p>
+      <p style="font-size: 0.9em; color: #a0aec0;">
+        📅 <span id="current-date"></span>
+      </p>
+    </div>
 
-  <h1>🧭 LifeDashboard v3.6</h1>
-  <p>あなたの記憶と記録をつなげる日記型アプリ</p>
+    <!-- 検索＆タグフィルタ -->
+    <div class="controls">
+      <input id="search-input" placeholder="🔍 キーワードで検索">
+      <input id="tag-filter-input" placeholder="🏷️ タグで絞り込み">
+    </div>
 
-  <!-- グローバル操作 -->
-  <div class="global-controls">
-    <button onclick="saveAllEntries()">一括保存</button>
-    <button onclick="exportMarkdown()">MD保存</button>
-    <button onclick="exportJSON()">JSON保存</button>
-    <button onclick="document.getElementById('importFile').click()">インポート</button>
-    <button onclick="clearAllEntries()">全削除</button>
-    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
-  </div>
+    <!-- セクション自動生成 -->
+    <script>
+      const sections = [
+        { id:'diary', label:'📝 日記', icon: '📝' },
+        { id:'study', label:'📚 勉強', icon: '📚' },
+        { id:'work', label:'💼 仕事', icon: '💼' },
+        { id:'schedule', label:'📅 予定', icon: '📅' }
+      ];
+      
+      sections.forEach(sec => {
+        document.write(`
+          <section id="${sec.id}">
+            <h2>
+              <span class="section-icon ${sec.id}-icon">${sec.icon}</span>
+              ${sec.label}
+            </h2>
+            <textarea class="editor" placeholder="ここに${sec.label.replace(/[📝📚💼📅]/, '')}を書いてください..."></textarea>
+            <input class="tag-input" placeholder="タグ（カンマ区切りで入力）例：重要,急ぎ,学習">
+            <div class="btn-group">
+              <button class="save-btn">💾 保存</button>
+              <button class="export-md-btn">📄 MD保存</button>
+              <button class="export-json-btn">📊 JSON保存</button>
+              <button class="import-btn">📤 インポート</button>
+              <input type="file" class="import-input" accept=".json,.md" style="display:none">
+            </div>
+            <ul class="history"></ul>
+          </section>
+        `);
+      });
+    </script>
 
-  <!-- フィルター -->
-  <div class="filters">
-    <input type="text" id="keywordFilter" placeholder="キーワード検索" oninput="filterAll()" />
-    <input type="text" id="tagFilter" placeholder="タグ検索 (#なし)" oninput="filterAll()" />
-    <button onclick="resetFilter()">リセット</button>
+    <!-- デバッグパネル -->
+    <section id="debug-panel">
+      <h2>🔧 システム情報</h2>
+      <pre id="debug-output"></pre>
+    </section>
   </div>
 
   <script>
-    const sections = [
-      { key: 'diary', title: '📘 日記' },
-      { key: 'study', title: '📚 勉強' },
-      { key: 'work',  title: '💼 仕事' },
-      { key: 'plan',  title: '📅 予定' }
-    ];
-  </script>
+    // 現在日時を表示
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('ja-JP', {
+      year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+    });
 
-  <div id="container"></div>
-
-  <script>
-    let data = {};
-
-    window.onload = () => {
-      initData();
-      renderSections();
-      loadAll();
-    };
-
-    function initData() {
-      sections.forEach(s => {
-        data[s.key] = JSON.parse(localStorage.getItem('life_' + s.key) || '[]');
-      });
+    // HTMLエスケープ
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;');
     }
 
-    function renderSections() {
-      const container = document.getElementById('container');
-      sections.forEach(s => {
-        const sec = document.createElement('div');
-        sec.className = 'section';
-        sec.id = s.key + 'Section';
-        sec.innerHTML = `
-          <h2>${s.title}</h2>
-          <textarea id="${s.key}Input" placeholder="ここに書いてください..."></textarea>
-          <div>
-            <input class="tag-input" id="${s.key}Tags" placeholder="タグをスペースで区切って入力 (例: 反省 読書)" />
-          </div>
-          <div class="buttons">
-            <button onclick="saveEntry('${s.key}')">保存</button>
-          </div>
-          <div class="history" id="${s.key}History"></div>
-        `;
-        container.appendChild(sec);
-      });
-    }
-
-    function loadAll() {
-      sections.forEach(s => renderHistory(s.key));
-    }
-
-    function saveEntry(key) {
-      const text = document.getElementById(key + 'Input').value.trim();
-      if (!text) return;
-      const tags = document.getElementById(key + 'Tags').value
-        .split(/\s+/).filter(t => t);
-      const entry = { text, tags, timestamp: new Date().toLocaleString() };
-      data[key].unshift(entry);
-      localStorage.setItem('life_' + key, JSON.stringify(data[key]));
-      renderHistory(key);
-      document.getElementById(key + 'Input').value = '';
-      document.getElementById(key + 'Tags').value = '';
-    }
-
-    function saveAllEntries() {
-      sections.forEach(s => {
-        const txt = document.getElementById(s.key + 'Input').value.trim();
-        if (txt) {
-          const tags = document.getElementById(s.key + 'Tags').value
-            .split(/\s+/).filter(t => t);
-          const entry = { text: txt, tags, timestamp: new Date().toLocaleString() };
-          data[s.key].unshift(entry);
-          localStorage.setItem('life_' + s.key, JSON.stringify(data[s.key]));
-          document.getElementById(s.key + 'Input').value = '';
-          document.getElementById(s.key + 'Tags').value = '';
-        }
-        renderHistory(s.key);
-      });
-      alert('すべての入力を保存しました');
-    }
-
-    function clearAllEntries() {
-      if (!confirm('全ての記録を削除しますか？')) return;
-      sections.forEach(s => {
-        data[s.key] = [];
-        localStorage.removeItem('life_' + s.key);
-        renderHistory(s.key);
-        document.getElementById(s.key + 'Input').value = '';
-        document.getElementById(s.key + 'Tags').value = '';
-      });
-    }
-
-    function renderHistory(key) {
-      const container = document.getElementById(key + 'History');
-      container.innerHTML = '';
-      const kw = document.getElementById('keywordFilter').value.trim();
-      const tg = document.getElementById('tagFilter').value.trim();
-      data[key].forEach(entry => {
-        if (kw && !entry.text.includes(kw)) return;
-        if (tg && !entry.tags.includes(tg)) return;
-        const div = document.createElement('div');
-        div.className = 'entry';
-        const tagHtml = entry.tags
-          .map(t => `<span onclick="setTagFilter('${t}')">${t}</span>`)
-          .join('');
-        div.innerHTML = `
-          <div class="timestamp">${entry.timestamp}</div>
-          <div class="tags">${tagHtml}</div>
-          <div class="text">${entry.text}</div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function filterAll() {
-      sections.forEach(s => renderHistory(s.key));
-    }
-
-    function resetFilter() {
-      document.getElementById('keywordFilter').value = '';
-      document.getElementById('tagFilter').value = '';
-      filterAll();
-    }
-
-    function setTagFilter(tag) {
-      document.getElementById('tagFilter').value = tag;
-      filterAll();
-    }
-
-    // -------------------------------
-    // ← ここから下を修正しました
-    // MD/JSON ダウンロードユーティリティ
-    function download(content, filename, mimeType) {
-      const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
-      a.download = filename;
-      // Chrome や Firefox で確実に動くように一旦 DOM に追加
-      document.body.appendChild(a);
+    // ダウンロードヘルパー
+    function download(content, filename, mime) {
+      const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; 
+      a.download = filename; 
       a.click();
-      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
 
-    // MD 保存
-    function exportMarkdown() {
-      let md = `# LifeDashboard v3.6\n\n`;
-      sections.forEach(s => {
-        md += `## ${s.title}\n\n`;
-        data[s.key].forEach(e => {
-          const tags = e.tags.map(t => `#${t}`).join(' ');
-          md += `**${e.timestamp}**  ${tags}\n\n${e.text}\n\n---\n\n`;
+    // トースト通知
+    function showToast(msg) {
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) existingToast.remove();
+      
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
+    }
+
+    // localStorage入出力
+    function getItems(sec) {
+      try {
+        return JSON.parse(localStorage.getItem(sec) || '[]');
+      } catch (e) {
+        console.error('データ読み込みエラー:', e);
+        return [];
+      }
+    }
+    
+    function saveItems(sec, items) {
+      try {
+        localStorage.setItem(sec, JSON.stringify(items));
+        return true;
+      } catch (e) {
+        console.error('データ保存エラー:', e);
+        showToast('❌ 保存に失敗しました');
+        return false;
+      }
+    }
+
+    // エントリー削除
+    function deleteEntry(sec, index) {
+      if (!confirm('この記録を削除しますか？')) return;
+      
+      const items = getItems(sec);
+      items.splice(index, 1);
+      saveItems(sec, items);
+      renderAllSections();
+      updateDebugPanel();
+      showToast('🗑️ 記録を削除しました');
+    }
+
+    // 保存
+    function saveEntry(sec) {
+      const area = document.querySelector(`#${sec} .editor`);
+      const tagIn = document.querySelector(`#${sec} .tag-input`);
+      const text = area.value.trim();
+      
+      if (!text) {
+        showToast('❌ テキストを入力してください');
+        area.focus();
+        return;
+      }
+      
+      const tags = tagIn.value.split(',')
+                     .map(s => s.trim())
+                     .filter(Boolean);
+
+      const items = getItems(sec);
+      const now = new Date();
+      const datetime = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+      const newEntry = { 
+        datetime, 
+        text, 
+        tags,
+        id: Date.now() // ユニークID追加
+      };
+      
+      items.push(newEntry);
+      
+      if (saveItems(sec, items)) {
+        area.value = ''; 
+        tagIn.value = '';
+        renderAllSections();
+        updateDebugPanel();
+        showToast('✅ 保存しました！');
+        
+        // 保存後、新しい入力にフォーカス
+        setTimeout(() => area.focus(), 100);
+      }
+    }
+
+    // Markdownエクスポート
+    function exportMarkdown(sec, items) {
+      const sectionNames = {
+        diary: '日記', study: '勉強', work: '仕事', schedule: '予定'
+      };
+      
+      let md = `# ${sectionNames[sec] || sec}\n\n`;
+      md += `エクスポート日時: ${new Date().toLocaleString('ja-JP')}\n\n`;
+      
+      if (items.length === 0) {
+        md += '記録はありません。\n';
+      } else {
+        items.forEach((item, index) => {
+          const tags = item.tags && item.tags.length ? ` [タグ: ${item.tags.join(', ')}]` : '';
+          md += `## ${items.length - index}. ${item.datetime}${tags}\n\n`;
+          md += `${item.text}\n\n---\n\n`;
         });
-      });
-      download(md, 'lifeDashboard.md', 'text/markdown');
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      download(md, `${sectionNames[sec]}_${today}.md`, 'text/markdown');
+      showToast(`📄 ${sectionNames[sec]}をMarkdownで保存しました`);
     }
 
-    // JSON 保存
-    function exportJSON() {
-      const json = JSON.stringify(data, null, 2);
-      download(json, 'lifeDashboard.json', 'application/json');
+    // JSONエクスポート
+    function exportJSON(sec, items) {
+      const exportData = {
+        section: sec,
+        exportDate: new Date().toISOString(),
+        totalItems: items.length,
+        items: items
+      };
+      
+      const today = new Date().toISOString().split('T')[0];
+      download(JSON.stringify(exportData, null, 2), `${sec}_${today}.json`, 'application/json');
+      showToast(`📊 ${sec}をJSONで保存しました`);
     }
 
-    // JSON インポート
-    function importJSON(evt) {
-      const file = evt.target.files[0];
-      if (!file) return;
+    // Markdownインポートパーサ
+    function parseMarkdown(md) {
+      const items = [];
+      const lines = md.split('\n');
+      let currentItem = null;
+      
+      for (let line of lines) {
+        // 日時とタグを含む行を検出
+        const headerMatch = line.match(/^## \d+\. (.+?)(\[タグ: (.+?)\])?$/);
+        if (headerMatch) {
+          if (currentItem) {
+            items.push(currentItem);
+          }
+          currentItem = {
+            datetime: headerMatch[1],
+            text: '',
+            tags: headerMatch[3] ? headerMatch[3].split(', ').map(t => t.trim()) : [],
+            id: Date.now() + Math.random()
+          };
+        } else if (currentItem && line.trim() !== '' && line !== '---') {
+          if (currentItem.text) currentItem.text += '\n';
+          currentItem.text += line;
+        }
+      }
+      
+      if (currentItem) {
+        items.push(currentItem);
+      }
+      
+      return items.reverse(); // 新しい順に
+    }
+
+    // インポート処理
+    function handleImport(sec, file) {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = (e) => {
         try {
-          const obj = JSON.parse(reader.result);
-          sections.forEach(s => {
-            data[s.key] = obj[s.key] || [];
-            localStorage.setItem('life_' + s.key, JSON.stringify(data[s.key]));
-            renderHistory(s.key);
-          });
-          alert('インポートが完了しました');
-        } catch {
-          alert('JSONの読み込みに失敗しました');
+          const text = e.target.result;
+          let items = [];
+          
+          if (file.name.endsWith('.json')) {
+            const data = JSON.parse(text);
+            items = data.items || data; // 新形式と旧形式両対応
+          } else if (file.name.endsWith('.md')) {
+            items = parseMarkdown(text);
+          }
+          
+          if (items.length === 0) {
+            showToast('❌ インポートできるデータがありませんでした');
+            return;
+          }
+          
+          // 既存データと統合
+          const existingItems = getItems(sec);
+          const mergedItems = [...existingItems, ...items];
+          
+          saveItems(sec, mergedItems);
+          renderAllSections();
+          updateDebugPanel();
+          showToast(`✅ ${items.length}件のデータをインポートしました`);
+        } catch (error) {
+          console.error('インポートエラー:', error);
+          showToast('❌ ファイルの読み込みに失敗しました');
         }
       };
-      reader.readAsText(file);
-      evt.target.value = '';
+      reader.readAsText(file, 'UTF-8');
     }
-    // → 修正ここまで
-  </script>
 
+    // 描画（フィルタ適用）
+    function renderSection(sec, filter) {
+      const ul = document.querySelector(`#${sec} .history`);
+      let items = getItems(sec);
+      const kw = filter.keyword.toLowerCase();
+      const tg = filter.tag.toLowerCase();
+
+      // フィルタリング
+      if (kw) {
+        items = items.filter(item =>
+          item.text.toLowerCase().includes(kw) ||
+          (item.tags && item.tags.some(t => t.toLowerCase().includes(kw)))
+        );
+      }
+      if (tg) {
+        items = items.filter(item =>
+          item.tags && item.tags.some(t => t.toLowerCase().includes(tg))
+        );
+      }
+
+      if (items.length === 0) {
+        ul.innerHTML = `
+          <div class="empty-state">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 011.732-1.732l.774.774a2 2 0 002.828 0l.774-.774A2 2 0 1113 10a2 2 0 01-1.732-1.732l-.774.774a2 2 0 01-2.828 0L6.732 8.268A2 2 0 016 10z" clip-rule="evenodd"></path>
+            </svg>
+            <p>まだ記録がありません。<br>上のテキストエリアに入力して「保存」ボタンを押してください。</p>
+          </div>
+        `;
+        return;
+      }
+
+      ul.innerHTML = items.slice().reverse().map((item, reverseIndex) => {
+        const actualIndex = items.length - 1 - reverseIndex;
+        const badges = (item.tags || []).map(tag => 
+          `<span class="badge">${escapeHTML(tag)}</span>`
+        ).join('');
+        
+        return `
+          <li>
+            <div class="entry-header">
+              <span class="timestamp">📅 ${escapeHTML(item.datetime)}</span>
+              <div class="entry-actions">
+                <button class="delete-btn" onclick="deleteEntry('${sec}', ${actualIndex})">🗑️ 削除</button>
+              </div>
+            </div>
+            ${badges ? `<div class="tags-container">${badges}</div>` : ''}
+            <div class="entry-content">${escapeHTML(item.text)}</div>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function renderAllSections() {
+      const keyword = document.getElementById('search-input').value.trim();
+      const tag = document.getElementById('tag-filter-input').value.trim();
+      const filter = { keyword, tag };
+      sections.forEach(sec => renderSection(sec.id, filter));
+    }
+
+    // デバッグパネル更新
+    function updateDebugPanel() {
+      const out = document.getElementById('debug-output');
+      const state = {
+        lastUpdate: new Date().toLocaleString('ja-JP'),
+        sections: {}
+      };
+      
+      sections.forEach(sec => {
+        const items = getItems(sec.id);
+        state.sections[sec.id] = {
+          label: sec.label,
+          count: items.length,
+          lastEntry: items.length > 0 ? items[items.length - 1].datetime : 'なし'
+        };
+      });
+      
+      out.textContent = JSON.stringify(state, null, 2);
+    }
+
+    // 初期化
+    document.addEventListener('DOMContentLoaded', () => {
+      sections.forEach(sec => {
+        // 保存ボタン
+        document.querySelector(`#${sec.id} .save-btn`)
+          .addEventListener('click', () => saveEntry(sec.id));
+        
+        // エクスポートボタン
+        document.querySelector(`#${sec.id} .export-md-btn`)
+          .addEventListener('click', () => exportMarkdown(sec.id, getItems(sec.id)));
+        document.querySelector(`#${sec.id} .export-json-btn`)
+          .addEventListener('click', () => exportJSON(sec.id, getItems(sec.id)));
+        
+        // インポートボタン
+        const input = document.querySelector(`#${sec.id} .import-input`);
+        document.querySelector(`#${sec.id} .import-btn`)
+          .addEventListener('click', () => input.click());
+        input.addEventListener('change', e => {
+          if (e.target.files.length) {
+            handleImport(sec.id, e.target.files[0]);
+            e.target.value = '';
+          }
+        });
+        
+        // Enterキーで保存（Shift+Enterで改行）
+        const textarea = document.querySelector(`#${sec.id} .editor`);
+        textarea.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            saveEntry(sec.id);
+          }
+        });
+      });
+
+      // フィルタイベント
+      document.getElementById('search-input')
+        .addEventListener('input', renderAllSections);
+      document.getElementById('tag-filter-input')
+        .addEventListener('input', renderAllSections);
+
+      // 初期描画
+      renderAllSections();
+      updateDebugPanel();
+      
+      // 最初のテキストエリアにフォーカス
+      const firstTextarea = document.querySelector('.editor');
+      if (firstTextarea) firstTextarea.focus();
+    });
+  </script>
 </body>
 </html>
