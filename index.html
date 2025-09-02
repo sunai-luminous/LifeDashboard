@@ -2,299 +2,280 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>記録アプリ＋検索＆タグ＋インポート</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LifeDashboard v3.6</title>
   <style>
-    body { font-family: sans-serif; margin:0; padding:0; background:#f0f2f5; }
-    .container { max-width:800px; margin:20px auto; padding:0 10px; }
-    section { background:#fff; border:1px solid #ddd; margin-bottom:20px;
-               padding:15px; border-radius:4px; }
-    section h2 { margin-top:0; }
-    textarea { width:100%; min-height:80px; margin-bottom:8px;
-               padding:8px; box-sizing:border-box; font-size:14px; }
-    .controls {
-      display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+      background: #f9f9f9;
     }
-    .controls input {
-      flex: 1; padding: 8px; font-size: 14px;
-      border: 1px solid #ccc; border-radius: 4px;
+    h1 {
+      margin-bottom: 0.5em;
     }
-    .tag-input {
-      width: 100%; padding: 6px 8px; font-size: 13px;
-      margin-bottom: 8px; box-sizing: border-box;
-      border: 1px solid #ccc; border-radius: 4px;
+    p {
+      margin-top: 0;
+      margin-bottom: 2em;
     }
-    .btn-group { display:flex; gap:8px; margin-bottom:12px; }
-    .btn-group button {
-      flex:1; padding:6px 12px; font-size:14px; cursor:pointer;
+    .global-controls {
+      margin-bottom: 1.5em;
     }
-    .history { list-style:none; padding:0; margin:0; }
-    .history li { border-top:1px solid #eee; padding:8px 0; }
-    .timestamp { font-size:12px; color:#666; margin-bottom:4px; }
-    .badge {
-      display:inline-block; background:#007bff; color:#fff;
-      padding:2px 6px; font-size:12px; border-radius:3px;
-      margin-right:4px;
+    .global-controls button {
+      margin-right: 0.5em;
+      padding: 0.5em 1em;
+      cursor: pointer;
     }
-    .toast {
-      position: fixed; bottom:20px; left:50%;
-      transform:translateX(-50%);
-      background:rgba(0,0,0,0.75); color:#fff;
-      padding:8px 16px; border-radius:4px;
-      opacity:0; transition:opacity .3s; z-index:100;
+    .filters {
+      margin-bottom: 2em;
     }
-    .toast.show { opacity:1; }
-    #debug-panel {
-      background:#272822; color:#f8f8f2; padding:12px;
-      border-radius:4px; margin-top:40px; font-size:13px;
-      overflow-x:auto;
+    .filters input {
+      padding: 0.5em;
+      margin-right: 0.5em;
+      width: 180px;
     }
-    #debug-panel h2 { margin-top:0; font-size:16px; color:#66d9ef; }
+    .section {
+      background: #fff;
+      padding: 1em;
+      margin-bottom: 2em;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .section h2 {
+      margin-top: 0;
+    }
+    .section textarea,
+    .section .tag-input {
+      width: calc(100% - 2em);
+      padding: 1em;
+      box-sizing: border-box;
+      margin-bottom: 0.5em;
+    }
+    .section textarea {
+      height: 100px;
+      resize: vertical;
+    }
+    .section .buttons button {
+      margin-right: 0.5em;
+      padding: 0.5em 1em;
+      cursor: pointer;
+    }
+    .history .entry {
+      border-top: 1px solid #ddd;
+      padding: 1em 0;
+    }
+    .entry .timestamp {
+      font-size: 0.8em;
+      color: #666;
+      margin-bottom: 0.5em;
+    }
+    .entry .tags span {
+      background: #eef;
+      color: #33c;
+      padding: 0.2em 0.5em;
+      margin-right: 0.3em;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- 検索＆タグフィルタ -->
-    <div class="controls">
-      <input id="search-input" placeholder="キーワードで検索">
-      <input id="tag-filter-input" placeholder="タグで絞り込み">
-    </div>
 
-    <!-- セクション自動生成 -->
-    <script>
-      const sections = [
-        { id:'diary',    label:'日記' },
-        { id:'study',    label:'勉強' },
-        { id:'work',     label:'仕事' },
-        { id:'schedule', label:'予定' }
-      ];
-      sections.forEach(sec => {
-        document.write(`
-          <section id="${sec.id}">
-            <h2>${sec.label}</h2>
-            <textarea class="editor" placeholder="ここに書いてね…"></textarea>
-            <input class="tag-input" placeholder="タグ（カンマ区切り）">
-            <div class="btn-group">
-              <button class="save-btn">保存</button>
-              <button class="export-md-btn">MD保存</button>
-              <button class="export-json-btn">JSON保存</button>
-              <button class="import-btn">インポート</button>
-              <input type="file" class="import-input" accept=".json,.md" style="display:none">
-            </div>
-            <ul class="history"></ul>
-          </section>
-        `);
-      });
-    </script>
+  <h1>🧭 LifeDashboard v3.6</h1>
+  <p>あなたの記憶と記録をつなげる日記型アプリ</p>
 
-    <!-- デバッグパネル -->
-    <section id="debug-panel">
-      <h2>デバッグパネル</h2>
-      <pre id="debug-output"></pre>
-    </section>
+  <!-- グローバル操作 -->
+  <div class="global-controls">
+    <button onclick="saveAllEntries()">一括保存</button>
+    <button onclick="exportMarkdown()">MD保存</button>
+    <button onclick="exportJSON()">JSON保存</button>
+    <button onclick="document.getElementById('importFile').click()">インポート</button>
+    <button onclick="clearAllEntries()">全削除</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
+  </div>
+
+  <!-- フィルター -->
+  <div class="filters">
+    <input type="text" id="keywordFilter" placeholder="キーワード検索" oninput="filterAll()" />
+    <input type="text" id="tagFilter" placeholder="タグ検索 (#なし)" oninput="filterAll()" />
+    <button onclick="resetFilter()">リセット</button>
   </div>
 
   <script>
-    // HTMLエスケープ
-    function escapeHTML(str) {
-      return str.replace(/&/g,'&amp;')
-                .replace(/</g,'&lt;')
-                .replace(/>/g,'&gt;');
-    }
+    const sections = [
+      { key: 'diary', title: '📘 日記' },
+      { key: 'study', title: '📚 勉強' },
+      { key: 'work',  title: '💼 仕事' },
+      { key: 'plan',  title: '📅 予定' }
+    ];
+  </script>
 
-    // ダウンロードヘルパー
-    function download(content, filename, mime) {
-      const blob = new Blob([content], { type: mime });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    }
+  <div id="container"></div>
 
-    // トースト通知
-    function showToast(msg) {
-      const t = document.createElement('div');
-      t.className = 'toast'; t.textContent = msg;
-      document.body.appendChild(t);
-      requestAnimationFrame(() => t.classList.add('show'));
-      setTimeout(() => {
-        t.classList.remove('show');
-        setTimeout(() => t.remove(), 300);
-      }, 2000);
-    }
+  <script>
+    let data = {};
 
-    // localStorage入出力
-    function getItems(sec) {
-      return JSON.parse(localStorage.getItem(sec) || '[]');
-    }
-    function saveItems(sec, items) {
-      localStorage.setItem(sec, JSON.stringify(items));
-    }
+    window.onload = () => {
+      initData();
+      renderSections();
+      loadAll();
+    };
 
-    // 保存
-    function saveEntry(sec) {
-      const area    = document.querySelector(`#${sec} .editor`);
-      const tagIn   = document.querySelector(`#${sec} .tag-input`);
-      const text    = area.value.trim();
-      if (!text) return alert('テキストを入力してください');
-      const tags = tagIn.value.split(',')
-                     .map(s=>s.trim()).filter(Boolean);
-
-      const items = getItems(sec);
-      const now   = new Date();
-      const dt    = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} `
-                   + `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}:`
-                   + `${String(now.getSeconds()).padStart(2,'0')}`;
-
-      items.push({ datetime: dt, text, tags });
-      saveItems(sec, items);
-      area.value = ''; tagIn.value = '';
-      renderAllSections();
-      updateDebugPanel();
-      showToast('保存しました');
-    }
-
-    // Markdownエクスポート
-    function exportMarkdown(sec, items) {
-      let md = `## ${sec}\n\n`;
-      items.forEach(({datetime,text,tags})=>{
-        const tg = tags.length? ` [${tags.join(',')}]` : '';
-        md += `- [${datetime}]${tg} ${text.replace(/\n/g,' ')}\n`;
+    function initData() {
+      sections.forEach(s => {
+        data[s.key] = JSON.parse(localStorage.getItem('life_' + s.key) || '[]');
       });
-      download(md, `${sec}.md`, 'text/markdown');
     }
 
-    // JSONエクスポート
-    function exportJSON(sec, items) {
-      download(JSON.stringify(items,null,2), `${sec}.json`, 'application/json');
+    function renderSections() {
+      const container = document.getElementById('container');
+      sections.forEach(s => {
+        const sec = document.createElement('div');
+        sec.className = 'section';
+        sec.id = s.key + 'Section';
+        sec.innerHTML = `
+          <h2>${s.title}</h2>
+          <textarea id="${s.key}Input" placeholder="ここに書いてください..."></textarea>
+          <div>
+            <input class="tag-input" id="${s.key}Tags" placeholder="タグをスペースで区切って入力 (例: 反省 読書)" />
+          </div>
+          <div class="buttons">
+            <button onclick="saveEntry('${s.key}')">保存</button>
+          </div>
+          <div class="history" id="${s.key}History"></div>
+        `;
+        container.appendChild(sec);
+      });
     }
 
-    // Markdownインポートパーサ
-    function parseMarkdown(md) {
-      return md.split('\n').reduce((arr,line)=>{
-        const m = line.match(/^- \
+    function loadAll() {
+      sections.forEach(s => renderHistory(s.key));
+    }
 
-\[(.+?)\\]
+    function saveEntry(key) {
+      const text = document.getElementById(key + 'Input').value.trim();
+      if (!text) return;
+      const tags = document.getElementById(key + 'Tags').value
+        .split(/\s+/).filter(t => t);
+      const entry = { text, tags, timestamp: new Date().toLocaleString() };
+      data[key].unshift(entry);
+      localStorage.setItem('life_' + key, JSON.stringify(data[key]));
+      renderHistory(key);
+      document.getElementById(key + 'Input').value = '';
+      document.getElementById(key + 'Tags').value = '';
+    }
 
-(?: \
-
-\[([^\\]
-
-]*)\\]
-
-)? (.+)/);
-        if (m) {
-          const dt   = m[1];
-          const tags = m[2]? m[2].split(',').map(s=>s.trim()).filter(Boolean):[];
-          const txt  = m[3];
-          arr.push({ datetime:dt, text:txt, tags });
+    function saveAllEntries() {
+      sections.forEach(s => {
+        const txt = document.getElementById(s.key + 'Input').value.trim();
+        if (txt) {
+          const tags = document.getElementById(s.key + 'Tags').value
+            .split(/\s+/).filter(t => t);
+          const entry = { text: txt, tags, timestamp: new Date().toLocaleString() };
+          data[s.key].unshift(entry);
+          localStorage.setItem('life_' + s.key, JSON.stringify(data[s.key]));
+          document.getElementById(s.key + 'Input').value = '';
+          document.getElementById(s.key + 'Tags').value = '';
         }
-        return arr;
-      }, []);
+        renderHistory(s.key);
+      });
+      alert('すべての入力を保存しました');
     }
 
-    // インポート処理
-    function handleImport(sec, file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const text = reader.result;
-        let items = [];
-        if (file.name.endsWith('.json')) {
-          try {
-            items = JSON.parse(text);
-          } catch {
-            return alert('JSONのパースに失敗しました');
-          }
-        } else if (file.name.endsWith('.md')) {
-          items = parseMarkdown(text);
-        }
-        saveItems(sec, items);
-        renderAllSections();
-        updateDebugPanel();
-        showToast('インポート完了');
-      };
-      reader.readAsText(file);
+    function clearAllEntries() {
+      if (!confirm('全ての記録を削除しますか？')) return;
+      sections.forEach(s => {
+        data[s.key] = [];
+        localStorage.removeItem('life_' + s.key);
+        renderHistory(s.key);
+        document.getElementById(s.key + 'Input').value = '';
+        document.getElementById(s.key + 'Tags').value = '';
+      });
     }
 
-    // 描画（フィルタ適用）
-    function renderSection(sec, filter) {
-      const ul    = document.querySelector(`#${sec} .history`);
-      let items   = getItems(sec);
-      const kw    = filter.keyword.toLowerCase();
-      const tg    = filter.tag.toLowerCase();
-
-      if (kw) {
-        items = items.filter(it =>
-          it.text.toLowerCase().includes(kw) ||
-          it.tags.some(t=>t.toLowerCase().includes(kw))
-        );
-      }
-      if (tg) {
-        items = items.filter(it =>
-          it.tags.some(t=>t.toLowerCase()===tg)
-        );
-      }
-
-      ul.innerHTML = items.slice().reverse().map(it => {
-        const badges = it.tags.map(t=>`<span class="badge">${escapeHTML(t)}</span>`).join('');
-        return `
-          <li>
-            <div class="timestamp">${it.datetime}</div>
-            <div>${badges}</div>
-            <pre>${escapeHTML(it.text)}</pre>
-          </li>`;
-      }).join('');
+    function renderHistory(key) {
+      const container = document.getElementById(key + 'History');
+      container.innerHTML = '';
+      const kw = document.getElementById('keywordFilter').value.trim();
+      const tg = document.getElementById('tagFilter').value.trim();
+      data[key].forEach(entry => {
+        if (kw && !entry.text.includes(kw)) return;
+        if (tg && !entry.tags.includes(tg)) return;
+        const div = document.createElement('div');
+        div.className = 'entry';
+        const tagHtml = entry.tags
+          .map(t => `<span onclick="setTagFilter('${t}')">${t}</span>`)
+          .join('');
+        div.innerHTML = `
+          <div class="timestamp">${entry.timestamp}</div>
+          <div class="tags">${tagHtml}</div>
+          <div class="text">${entry.text}</div>
+        `;
+        container.appendChild(div);
+      });
     }
 
-    function renderAllSections() {
-      const keyword = document.getElementById('search-input').value.trim();
-      const tag     = document.getElementById('tag-filter-input').value.trim();
-      const filter  = { keyword, tag };
-      sections.forEach(sec => renderSection(sec.id, filter));
+    function filterAll() {
+      sections.forEach(s => renderHistory(s.key));
     }
 
-    // デバッグパネル更新
-    function updateDebugPanel() {
-      const out = document.getElementById('debug-output');
-      const state = {};
-      sections.forEach(sec => state[sec.id] = getItems(sec.id));
-      out.textContent = JSON.stringify(state, null, 2);
+    function resetFilter() {
+      document.getElementById('keywordFilter').value = '';
+      document.getElementById('tagFilter').value = '';
+      filterAll();
     }
 
-    // 初期化
-    document.addEventListener('DOMContentLoaded', () => {
-      sections.forEach(sec => {
-        // 保存
-        document.querySelector(`#${sec.id} .save-btn`)
-          .addEventListener('click', ()=> saveEntry(sec.id));
-        // エクスポート
-        document.querySelector(`#${sec.id} .export-md-btn`)
-          .addEventListener('click',
-            ()=> exportMarkdown(sec.id, getItems(sec.id))
-          );
-        document.querySelector(`#${sec.id} .export-json-btn`)
-          .addEventListener('click',
-            ()=> exportJSON(sec.id, getItems(sec.id))
-          );
-        // インポート
-        const input = document.querySelector(`#${sec.id} .import-input`);
-        document.querySelector(`#${sec.id} .import-btn`)
-          .addEventListener('click', ()=> input.click());
-        input.addEventListener('change', e=>{
-          if (e.target.files.length) handleImport(sec.id, e.target.files[0]);
-          e.target.value = '';
+    function setTagFilter(tag) {
+      document.getElementById('tagFilter').value = tag;
+      filterAll();
+    }
+
+    function exportMarkdown() {
+      let md = `# LifeDashboard v3.6\n\n`;
+      sections.forEach(s => {
+        md += `## ${s.title}\n\n`;
+        data[s.key].forEach(e => {
+          const tags = e.tags.map(t => `#${t}`).join(' ');
+          md += `**${e.timestamp}**  ${tags}\n\n${e.text}\n\n---\n\n`;
         });
       });
+      download('lifeDashboard.md', md, 'text/markdown');
+    }
 
-      // フィルタイベント
-      document.getElementById('search-input')
-        .addEventListener('input', renderAllSections);
-      document.getElementById('tag-filter-input')
-        .addEventListener('input', renderAllSections);
+    function exportJSON() {
+      download('lifeDashboard.json',
+        JSON.stringify(data, null, 2),
+        'application/json');
+    }
 
-      renderAllSections();
-      updateDebugPanel();
-    });
+    function importJSON(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const obj = JSON.parse(reader.result);
+          sections.forEach(s => {
+            data[s.key] = obj[s.key] || [];
+            localStorage.setItem('life_' + s.key, JSON.stringify(data[s.key]));
+            renderHistory(s.key);
+          });
+          alert('インポートが完了しました');
+        } catch {
+          alert('JSONの読み込みに失敗しました');
+        }
+      };
+      reader.readAsText(file);
+      evt.target.value = '';
+    }
+
+    function download(name, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
+
 </body>
 </html>
