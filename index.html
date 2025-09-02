@@ -41,17 +41,20 @@
     .section h2 {
       margin-top: 0;
     }
-    .section textarea,
-    .section .tag-input {
-      width: calc(100% - 2em);
-      padding: 1em;
-      box-sizing: border-box;
-      margin-bottom: 0.5em;
-    }
-    .section textarea {
-      height: 100px;
-      resize: vertical;
-    }
+   .section textarea {
+  width: 300px;    
+  height: 60px;           /* 高さを60pxに */
+  padding: 0.5em;         /* 内側の余白を控えめに */
+  font-size: 0.95em;      /* フォントサイズも少し小さく */
+  resize: vertical;       
+}
+
+.section .tag-input {
+  width: 300px;           /* 幅を固定してコンパクトに */
+  height: 28px;           /* タグ欄の高さ */
+  padding: 0.25em 0.5em;  /* 上下0.25em、左右0.5em */
+  font-size: 0.85em;      /* 少し小さめの文字 */
+  margin-bottom: 0.5em;   /* 下の余白を少なく */
     .section .buttons button {
       margin-right: 0.5em;
       padding: 0.5em 1em;
