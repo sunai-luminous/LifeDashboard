@@ -1,107 +1,177 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Markdownエディタ（タブ切替式）</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LifeDashboard</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+  />
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
-    }
-
-    .tab-buttons {
+    /* Layout */
+    .dashboard {
       display: flex;
-      border-bottom: 1px solid #ccc;
-      background: #fff;
+      height: 100vh;
     }
-
-    .tab-buttons button {
+    .sidebar {
+      width: 240px;
+      border-right: 1px solid #ddd;
+      background-color: #fff;
+    }
+    .content {
       flex: 1;
-      padding: 12px;
-      border: none;
-      background: #eee;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .tab-buttons button.active {
-      background: #fff;
-      border-bottom: 2px solid #007acc;
-      color: #007acc;
-    }
-
-    .tab-content {
-      padding: 16px;
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    textarea {
-      width: 100%;
-      height: 60vh;
-      font-size: 16px;
-      padding: 12px;
-      box-sizing: border-box;
-      resize: vertical;
-    }
-
-    .preview {
-      background: #fff;
-      border: 1px solid #ccc;
-      padding: 12px;
-      min-height: 60vh;
       overflow-y: auto;
+      background-color: #f9f9f9;
+    }
+
+    /* Active tab underline */
+    .tabs.is-toggle li.is-active a {
+      border-bottom-color: #3273dc;
+      color: #3273dc;
+    }
+
+    /* Markdown rendered styling */
+    #markdown-rendered h1,
+    #markdown-rendered h2,
+    #markdown-rendered h3 {
+      margin-top: 1em;
+    }
+    #markdown-rendered ul {
+      margin-left: 1em;
     }
   </style>
 </head>
 <body>
-  <div class="tab-buttons">
-    <button id="tab-input" class="active">📝 入力</button>
-    <button id="tab-preview">👁 プレビュー</button>
+  <!-- Navbar -->
+  <nav class="navbar is-light" role="navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="#">📘 LifeDashboard</a>
+    </div>
+  </nav>
+
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="menu sidebar">
+      <p class="menu-label">メニュー</p>
+      <ul class="menu-list">
+        <li><a class="is-active" data-target="dashboard">ダッシュボード</a></li>
+        <li><a data-target="notes">ノート</a></li>
+        <li><a data-target="settings">設定</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section">
+        <h2 class="title is-4">🏠 ダッシュボード</h2>
+        <p>ここにダッシュボード概要を表示します。</p>
+      </section>
+
+      <!-- Notes Section -->
+      <section id="notes" class="section is-hidden">
+        <h2 class="title is-4">📝 ノート</h2>
+
+        <!-- タブ切り替え -->
+        <div class="tabs is-toggle is-fullwidth">
+          <ul>
+            <li class="is-active" id="tab-write"><a>入力</a></li>
+            <li id="tab-preview"><a>プレビュー</a></li>
+          </ul>
+        </div>
+
+        <!-- 入力エリア -->
+        <div id="editor-pane">
+          <textarea
+            id="markdown-editor"
+            class="textarea"
+            rows="12"
+            placeholder="Markdownで記述..."
+          ></textarea>
+        </div>
+
+        <!-- プレビューエリア -->
+        <div id="preview-pane" class="box is-hidden">
+          <div id="markdown-rendered"></div>
+        </div>
+      </section>
+
+      <!-- Settings Section -->
+      <section id="settings" class="section is-hidden">
+        <h2 class="title is-4">⚙️ 設定</h2>
+        <p>設定項目をここに追加します。</p>
+      </section>
+    </main>
   </div>
 
-  <div id="content-input" class="tab-content active">
-    <textarea id="markdown-input" placeholder="ここにMarkdownを書いてください..."></textarea>
-  </div>
-
-  <div id="content-preview" class="tab-content">
-    <div id="markdown-preview" class="preview"></div>
-  </div>
-
+  <!-- marked.js for Markdown → HTML -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    const tabInput = document.getElementById('tab-input');
-    const tabPreview = document.getElementById('tab-preview');
-    const contentInput = document.getElementById('content-input');
-    const contentPreview = document.getElementById('content-preview');
-    const markdownInput = document.getElementById('markdown-input');
-    const markdownPreview = document.getElementById('markdown-preview');
+    // サイドバーメニュー切り替え
+    document.querySelectorAll('.menu-list a').forEach(link => {
+      link.addEventListener('click', () => {
+        // 各リンクのアクティブ化制御
+        document.querySelectorAll('.menu-list a').forEach(el =>
+          el.classList.remove('is-active')
+        );
+        link.classList.add('is-active');
 
-    tabInput.addEventListener('click', () => {
-      tabInput.classList.add('active');
-      tabPreview.classList.remove('active');
-      contentInput.classList.add('active');
-      contentPreview.classList.remove('active');
+        // セクション表示切り替え
+        const target = link.getAttribute('data-target');
+        document.querySelectorAll('main .section').forEach(sec =>
+          sec.classList.add('is-hidden')
+        );
+        document.getElementById(target).classList.remove('is-hidden');
+
+        // 現在セクションを保存
+        localStorage.setItem('lifeDashboardSection', target);
+      });
+    });
+
+    // Markdownノート部品
+    const tabWrite = document.getElementById('tab-write');
+    const tabPreview = document.getElementById('tab-preview');
+    const editorPane = document.getElementById('editor-pane');
+    const previewPane = document.getElementById('preview-pane');
+    const markdownEditor = document.getElementById('markdown-editor');
+    const markdownRendered = document.getElementById('markdown-rendered');
+
+    // タブ切り替え処理
+    tabWrite.addEventListener('click', () => {
+      tabWrite.classList.add('is-active');
+      tabPreview.classList.remove('is-active');
+      editorPane.classList.remove('is-hidden');
+      previewPane.classList.add('is-hidden');
     });
 
     tabPreview.addEventListener('click', () => {
-      tabPreview.classList.add('active');
-      tabInput.classList.remove('active');
-      contentPreview.classList.add('active');
-      contentInput.classList.remove('active');
-      markdownPreview.innerHTML = marked.parse(markdownInput.value);
+      tabPreview.classList.add('is-active');
+      tabWrite.classList.remove('is-active');
+      editorPane.classList.add('is-hidden');
+      previewPane.classList.remove('is-hidden');
+      markdownRendered.innerHTML = marked.parse(markdownEditor.value);
     });
 
-    markdownInput.addEventListener('input', () => {
-      if (contentPreview.classList.contains('active')) {
-        markdownPreview.innerHTML = marked.parse(markdownInput.value);
+    // 入力自動保存＆プレビュー反映
+    markdownEditor.addEventListener('input', () => {
+      localStorage.setItem('lifeDashboardNote', markdownEditor.value);
+      if (!previewPane.classList.contains('is-hidden')) {
+        markdownRendered.innerHTML = marked.parse(markdownEditor.value);
       }
+    });
+
+    // ページロード時に保存データを復元
+    window.addEventListener('DOMContentLoaded', () => {
+      // 最後に表示していたセクション
+      const savedSection = localStorage.getItem('lifeDashboardSection');
+      if (savedSection) {
+        document.querySelector(`.menu-list a[data-target="${savedSection}"]`).click();
+      }
+
+      // ノート内容の復元
+      const savedNote = localStorage.getItem('lifeDashboardNote');
+      if (savedNote) markdownEditor.value = savedNote;
     });
   </script>
 </body>
