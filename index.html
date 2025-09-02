@@ -2,230 +2,57 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>4セクション＋Markdown保存</title>
-  <style>
-    /* リセット＆ベース */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: sans-serif; line-height: 1.5; }
-
-    /* コンテナ */
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-
-    /* インポート／エクスポート */
-    .import-export {
-      text-align: right;
-      margin-bottom: 1rem;
-    }
-    .import-export button {
-      margin-left: 0.5rem;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
-    }
-    .import-export input[type="file"] { display: none; }
-
-    /* 各セクション */
-    .section {
-      margin-bottom: 2rem;
-    }
-    .section header {
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
-    }
-    .section textarea {
-      width: 100%;
-      min-height: 120px;
-      padding: 0.6rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      resize: vertical;
-    }
-    .section .saveBtn {
-      margin-top: 0.5rem;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
-    }
-
-    /* 履歴リスト */
-    .history {
-      list-style: none;
-      margin-top: 0.8rem;
-    }
-    .history li {
-      border-top: 1px solid #ddd;
-      padding: 0.6rem 0;
-    }
-    .history li:first-child { border-top: none; }
-    .history .timestamp {
-      font-size: 0.8rem;
-      color: #777;
-      margin-bottom: 0.3rem;
-    }
-    .history pre {
-      white-space: pre-wrap;
-      word-break: break-all;
-      font-size: 0.95rem;
-      margin: 0;
-    }
-
-    /* スマホ対応 */
-    @media (max-width: 400px) {
-      .section header { font-size: 1.1rem; }
-      .import-export button { font-size: 0.8rem; padding: 0.3rem 0.6rem; }
-    }
-  </style>
+  <title>シンプル記録アプリ</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div class="container">
-    <!-- Export / Import -->
-    <div class="import-export">
-      <button id="exportBtn">Export MD</button>
-      <button id="importBtn">Import MD</button>
-      <input type="file" id="fileInput" accept=".md">
-    </div>
-
-    <!-- 4つのセクション -->
-    <div class="section" data-key="diary">
-      <header>📝 日記</header>
-      <textarea placeholder="Markdownで書く…"></textarea>
-      <button class="saveBtn">保存</button>
+    <!-- セクションの繰り返し -->
+    <section id="diary" class="entry-section">
+      <h2>日記</h2>
+      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
+      <div class="btn-group">
+        <button class="save-btn">保存</button>
+        <button class="export-md-btn">MD保存</button>
+        <button class="export-json-btn">JSON保存</button>
+      </div>
       <ul class="history"></ul>
-    </div>
+    </section>
 
-    <div class="section" data-key="study">
-      <header>📚 勉強</header>
-      <textarea placeholder="Markdownで書く…"></textarea>
-      <button class="saveBtn">保存</button>
+    <section id="study" class="entry-section">
+      <h2>勉強</h2>
+      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
+      <div class="btn-group">
+        <button class="save-btn">保存</button>
+        <button class="export-md-btn">MD保存</button>
+        <button class="export-json-btn">JSON保存</button>
+      </div>
       <ul class="history"></ul>
-    </div>
+    </section>
 
-    <div class="section" data-key="work">
-      <header>💼 仕事</header>
-      <textarea placeholder="Markdownで書く…"></textarea>
-      <button class="saveBtn">保存</button>
+    <section id="work" class="entry-section">
+      <h2>仕事</h2>
+      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
+      <div class="btn-group">
+        <button class="save-btn">保存</button>
+        <button class="export-md-btn">MD保存</button>
+        <button class="export-json-btn">JSON保存</button>
+      </div>
       <ul class="history"></ul>
-    </div>
+    </section>
 
-    <div class="section" data-key="schedule">
-      <header>📅 予定</header>
-      <textarea placeholder="Markdownで書く…"></textarea>
-      <button class="saveBtn">保存</button>
+    <section id="schedule" class="entry-section">
+      <h2>予定</h2>
+      <textarea class="editor" placeholder="ここに書いてね…"></textarea>
+      <div class="btn-group">
+        <button class="save-btn">保存</button>
+        <button class="export-md-btn">MD保存</button>
+        <button class="export-json-btn">JSON保存</button>
+      </div>
       <ul class="history"></ul>
-    </div>
+    </section>
   </div>
 
-  <script>
-    (function(){
-      const sections = document.querySelectorAll('.section');
-      const fileInput = document.getElementById('fileInput');
-
-      // localStorage utils
-      const load = key => JSON.parse(localStorage.getItem(key) || '[]');
-      const save = (key, arr) => localStorage.setItem(key, JSON.stringify(arr));
-
-      // 履歴レンダリング
-      function renderHistory(section, items) {
-        const ul = section.querySelector('.history');
-        ul.innerHTML = '';
-        items.slice().reverse().forEach(item => {
-          const li = document.createElement('li');
-          const time = document.createElement('div');
-          time.className = 'timestamp';
-          time.textContent = item.datetime;
-          const pre = document.createElement('pre');
-          pre.textContent = item.text;
-          li.appendChild(time);
-          li.appendChild(pre);
-          ul.appendChild(li);
-        });
-      }
-
-      // セクションごとに初期化
-      sections.forEach(sec => {
-        const key    = sec.dataset.key;
-        let   items  = load(key);
-        const ta     = sec.querySelector('textarea');
-        const btn    = sec.querySelector('.saveBtn');
-
-        renderHistory(sec, items);
-
-        btn.addEventListener('click', () => {
-          const text = ta.value.trim();
-          if (!text) return;
-          const datetime = new Date().toLocaleString();
-          items.push({ datetime, text });
-          save(key, items);
-          renderHistory(sec, items);
-          ta.value = '';
-        });
-      });
-
-      // Export Markdown
-      document.getElementById('exportBtn')
-        .addEventListener('click', () => {
-          let md = '';
-          sections.forEach(sec => {
-            const key   = sec.dataset.key;
-            const title = sec.querySelector('header').textContent;
-            const items = load(key);
-            md += `## ${title}\n\n`;
-            items.forEach(it => {
-              md += `### ${it.datetime}\n\n${it.text}\n\n`;
-            });
-          });
-          const blob = new Blob([md], { type: 'text/markdown' });
-          const url  = URL.createObjectURL(blob);
-          const a    = document.createElement('a');
-          a.href     = url;
-          a.download = 'notes_export.md';
-          a.click();
-          URL.revokeObjectURL(url);
-        });
-
-      // Import Markdown
-      document.getElementById('importBtn')
-        .addEventListener('click', () => fileInput.click());
-
-      fileInput.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-          const text = reader.result;
-          const parts = text.split(/^##\s+/m).slice(1);
-          parts.forEach(part => {
-            const [headerLine, ...rest] = part.split('\n');
-            const title = headerLine.trim();
-            let key = '';
-            if (title.includes('日記')) key = 'diary';
-            if (title.includes('勉強')) key = 'study';
-            if (title.includes('仕事')) key = 'work';
-            if (title.includes('予定')) key = 'schedule';
-            if (!key) return;
-
-            const entries = rest.join('\n')
-              .split(/^###\s+/m).slice(1)
-              .map(e => {
-                const [dt, ...txt] = e.split('\n');
-                return { datetime: dt.trim(), text: txt.join('\n').trim() };
-              });
-
-            save(key, entries);
-            renderHistory(
-              document.querySelector(`.section[data-key="${key}"]`),
-              entries
-            );
-          });
-        };
-        reader.readAsText(file);
-      });
-    })();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
