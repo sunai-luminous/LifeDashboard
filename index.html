@@ -2,817 +2,439 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>LifeDashboard v5.0</title>
+  <title>LifeDashboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     :root {
-      /* ライトモード */
-      --bg-primary: #f5f7fa;
-      --bg-secondary: #ffffff;
-      --bg-tertiary: #f7fafc;
-      --text-primary: #2d3748;
-      --text-secondary: #718096;
-      --text-muted: #a0aec0;
-      --border-color: #e2e8f0;
-      --border-hover: #4299e1;
-      --shadow: rgba(0,0,0,0.1);
-      --shadow-hover: rgba(0,0,0,0.15);
-      
-      /* アクセントカラー */
-      --accent-blue: #4299e1;
-      --accent-green: #48bb78;
-      --accent-orange: #ed8936;
-      --accent-purple: #9f7aea;
+      --bg: #f5f7fa;
+      --fg: #2d3748;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --accent: #4299e1;
       --accent-red: #f56565;
-      
-      /* グラデーション */
-      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --gradient-success: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-      --gradient-warning: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
     }
-    
     [data-theme="dark"] {
-      /* ダークモード */
-      --bg-primary: #1a202c;
-      --bg-secondary: #2d3748;
-      --bg-tertiary: #4a5568;
-      --text-primary: #e2e8f0;
-      --text-secondary: #cbd5e0;
-      --text-muted: #a0aec0;
-      --border-color: #4a5568;
-      --border-hover: #63b3ed;
-      --shadow: rgba(0,0,0,0.3);
-      --shadow-hover: rgba(0,0,0,0.4);
-      
-      /* ダークモード用アクセント調整 */
-      --accent-blue: #63b3ed;
-      --accent-green: #68d391;
-      --accent-orange: #f6ad55;
-      --accent-purple: #b794f6;
+      --bg: #1a202c;
+      --fg: #e2e8f0;
+      --muted: #cbd5e0;
+      --border: #4a5568;
+      --accent: #63b3ed;
       --accent-red: #fc8181;
     }
-
-    * { box-sizing: border-box; }
-    
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-      margin: 0; padding: 0; 
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      transition: all 0.3s ease;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      transition: background .3s,color .3s;
+      line-height: 1.5;
     }
-    
-    .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
-    
-    .header { 
-      text-align: center; margin-bottom: 30px;
-      background: var(--bg-secondary);
-      padding: 30px; border-radius: 12px;
-      box-shadow: 0 2px 15px var(--shadow);
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 16px;
     }
-    .header h1 { color: var(--text-primary); font-size: 2.5em; margin-bottom: 10px; }
-    .header p { color: var(--text-secondary); font-size: 1.1em; margin: 5px 0; }
-    .version-badge {
-      display: inline-block; background: var(--gradient-primary);
-      color: white; padding: 4px 12px; border-radius: 20px;
-      font-size: 0.8em; font-weight: 600; margin-left: 10px;
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
     }
-    
-    .controls-panel {
-      background: var(--bg-secondary); padding: 25px; border-radius: 12px;
-      box-shadow: 0 2px 15px var(--shadow); margin-bottom: 25px;
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
     }
-    
+    .header p {
+      color: var(--muted);
+      font-size: .9rem;
+    }
     .controls {
-      display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
     .controls input {
-      flex: 1; padding: 12px; font-size: 14px; min-width: 200px;
-      border: 2px solid var(--border-color); border-radius: 8px; 
-      transition: all 0.3s; background: var(--bg-secondary); color: var(--text-primary);
+      flex: 1;
+      min-width: 120px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--fg);
+      transition: border .2s;
     }
-    .controls input:focus { 
-      outline: none; border-color: var(--border-hover); 
-      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); 
+    .controls input:focus {
+      border-color: var(--accent);
     }
-    
-    .theme-toggle {
-      background: var(--bg-tertiary); border: 2px solid var(--border-color);
-      color: var(--text-primary); padding: 12px 20px; border-radius: 8px;
-      cursor: pointer; transition: all 0.3s; font-weight: 600; 
-      display: flex; align-items: center; gap: 8px;
+    .controls button {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--fg);
+      cursor: pointer;
+      transition: background .2s, border .2s;
     }
-    .theme-toggle:hover { border-color: var(--border-hover); transform: translateY(-1px); }
-    
+    .controls button:hover {
+      border-color: var(--accent);
+    }
+    .theme-toggle { font-weight: 600; }
     .data-management {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
     }
-    
-    .data-btn {
-      padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; 
-      transition: all 0.3s; color: white; text-transform: uppercase; letter-spacing: 0.5px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+    .data-management button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: background .2s;
     }
-    .export-all-btn { background: var(--gradient-primary); }
-    .import-btn { background: var(--gradient-success); }
-    .backup-btn { background: var(--gradient-warning); }
-    .clear-btn { background: var(--accent-red); }
-    
-    .data-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow-hover); }
-    
-    section { 
-      background: var(--bg-secondary); border: none; margin-bottom: 25px;
-      padding: 25px; border-radius: 12px; box-shadow: 0 2px 15px var(--shadow); transition: all 0.3s;
+    .data-management button:hover {
+      background: var(--accent-red);
     }
-    
-    section h2 { 
-      margin-top: 0; color: var(--text-primary); font-size: 1.5em; margin-bottom: 20px;
-      display: flex; align-items: center; gap: 10px;
+    section {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
     }
-    
+    section h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
     .section-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; 
-      color: white; font-weight: bold; font-size: 18px;
+      width: 28px; height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
     }
-    .diary-icon { background: var(--accent-blue); }
-    .study-icon { background: var(--accent-green); }
-    .work-icon { background: var(--accent-orange); }
-    .schedule-icon { background: var(--accent-purple); }
-    
-    textarea, input[type="text"].editor { 
-      width: 100%; min-height: 100px; margin-bottom: 15px; padding: 15px; font-size: 14px;
-      border: 2px solid var(--border-color); border-radius: 8px; resize: vertical;
-      font-family: inherit; transition: all 0.3s; background: var(--bg-secondary); color: var(--text-primary);
+    textarea, .tag-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--fg);
+      resize: vertical;
+      margin-bottom: 8px;
     }
-    input[type="text"].editor { min-height: 50px; resize: none; }
-    
-    textarea:focus, input[type="text"].editor:focus { 
-      outline: none; border-color: var(--border-hover); 
-      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); 
+    .btn-save {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background .2s;
     }
-    
-    .tag-input {
-      width: 100%; padding: 12px; font-size: 13px; margin-bottom: 15px;
-      border: 2px solid var(--border-color); border-radius: 8px; transition: all 0.3s; 
-      background: var(--bg-secondary); color: var(--text-primary);
+    .btn-save:hover {
+      background: var(--accent-red);
     }
-    .tag-input:focus { 
-      outline: none; border-color: var(--border-hover); 
-      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); 
+    .history {
+      list-style: none;
+      margin-top: 12px;
     }
-    
-    .btn-group { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-    .btn-group button {
-      padding: 12px 20px; font-size: 14px; cursor: pointer; border: none;
-      border-radius: 8px; font-weight: 600; transition: all 0.3s;
-      color: white; display: flex; align-items: center; gap: 8px;
+    .history li {
+      border-top: 1px solid var(--border);
+      padding: 8px 0;
     }
-    .save-btn { background: var(--accent-blue); }
-    .export-section-btn { background: var(--accent-green); }
-    
-    .btn-group button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--shadow-hover); }
-    
-    .history { list-style: none; padding: 0; margin: 0; }
-    .history li { 
-      background: var(--bg-tertiary); border: 1px solid var(--border-color); 
-      margin-bottom: 15px; padding: 20px; border-radius: 10px; 
-      position: relative; transition: all 0.3s;
+    .timestamp {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: 4px;
     }
-    .history li:hover { box-shadow: 0 4px 12px var(--shadow); transform: translateY(-2px); }
-    
-    .entry-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
-    }
-    .timestamp { 
-      font-size: 12px; color: var(--text-secondary); font-weight: 600;
-      background: var(--bg-secondary); padding: 6px 10px; border-radius: 6px;
-      border: 1px solid var(--border-color);
-    }
-    .entry-actions { display: flex; gap: 8px; }
-    .delete-btn {
-      background: var(--accent-red); color: white; border: none; padding: 6px 10px; 
-      border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.3s;
-    }
-    .delete-btn:hover { transform: scale(1.05); }
-    
-    .tags-container { margin-bottom: 10px; }
     .badge {
-      display: inline-block; background: var(--gradient-primary);
-      color: white; padding: 4px 10px; font-size: 11px; border-radius: 20px;
-      margin-right: 6px; font-weight: 600; 
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 2px 6px;
+      font-size: .75rem;
+      border-radius: 4px;
+      margin-right: 4px;
     }
-    
     .entry-content {
-      color: var(--text-primary); font-size: 14px; line-height: 1.6;
-      background: var(--bg-secondary); padding: 15px; border-radius: 8px; 
-      border: 1px solid var(--border-color); white-space: pre-wrap; font-family: inherit;
+      white-space: pre-wrap;
+      margin-top: 4px;
     }
-    
     .toast {
-      position: fixed; bottom: 30px; right: 30px; z-index: 1000;
-      background: var(--gradient-primary); color: white; padding: 15px 25px; border-radius: 10px;
-      font-weight: 600; box-shadow: 0 4px 20px var(--shadow-hover);
-      opacity: 0; transform: translateY(100px); 
-      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      position: fixed;
+      bottom: 20px; right: 20px;
+      padding: 8px 16px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 4px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
     }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    
-    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-    .empty-state svg { width: 64px; height: 64px; margin-bottom: 20px; opacity: 0.5; fill: var(--text-muted); }
-    
-    .auto-save-indicator {
-      display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; 
-      background: var(--accent-green); color: white; border-radius: 20px; font-size: 12px;
-      font-weight: 600; opacity: 0; transition: all 0.3s;
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
     }
-    .auto-save-indicator.show { opacity: 1; }
-    
-    @media (max-width: 768px) {
-      .container { padding: 0 15px; }
-      .btn-group, .data-management { flex-direction: column; }
-      .btn-group button, .data-btn { width: 100%; }
-      .controls { flex-direction: column; }
-      .controls input { min-width: auto; width: 100%; }
-      .data-management { grid-template-columns: 1fr; }
-    }
-
-    /* カスタムスクロールバー */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
-    ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
   </style>
 </head>
 <body data-theme="light">
   <div class="container">
     <div class="header">
-      <h1>📋 LifeDashboard <span class="version-badge">v2.0</span></h1>
-      <p>堅牢なデータ保存とダークモード対応</p>
-      <p style="font-size: 0.9em; color: var(--text-muted);">
-        📅 <span id="current-date"></span>
-      </p>
-      <div class="auto-save-indicator" id="auto-save">💾 自動保存完了</div>
+      <h1>📋 LifeDashboard</h1>
+      <p>📅 <span id="current-date"></span></p>
     </div>
 
-    <!-- コントロールパネル -->
-    <div class="controls-panel">
-      <div class="controls">
-        <input id="search-input" placeholder="🔍 キーワードで検索">
-        <input id="tag-filter-input" placeholder="🏷️ タグで絞り込み">
-        <button class="theme-toggle" id="theme-toggle">
-          <span id="theme-icon">🌙</span>
-          <span id="theme-text">ダーク</span>
-        </button>
-      </div>
-      
-      <div class="data-management">
-        <button class="data-btn export-all-btn" id="export-all">📤 全データエクスポート</button>
-        <button class="data-btn import-btn" id="import-data">📥 データインポート</button>
-        <button class="data-btn backup-btn" id="create-backup">💾 バックアップ作成</button>
-        <button class="data-btn clear-btn" id="clear-all">🗑️ 全データクリア</button>
-      </div>
-      
-      <input type="file" id="file-input" accept=".json,.md,.txt" style="display: none;">
+    <div class="controls">
+      <input id="search-input" placeholder="🔍 キーワード">
+      <input id="tag-input"    placeholder="🏷️ タグ絞込">
+      <button class="theme-toggle" id="toggle-theme">🌙 ダーク</button>
     </div>
 
-    <!-- セクション自動生成 -->
-    <div id="sections-container"></div>
+    <div class="data-management">
+      <button id="export-all">💾 エクスポート</button>
+      <button id="import-all">📥 インポート</button>
+    </div>
+
+    <input type="file" id="file-input" accept=".md,.txt" style="display:none">
+
+    <section id="diary">
+      <h2><span class="section-icon">📖</span>日記</h2>
+      <textarea id="diary-input" rows="3" placeholder="今日の出来事…"></textarea>
+      <input class="tag-input" id="diary-tags" placeholder="タグ (例: 重要, 楽しい)">
+      <button class="btn-save" data-section="diary">保存</button>
+      <ul class="history" id="diary-history"></ul>
+    </section>
+
+    <section id="study">
+      <h2><span class="section-icon">📚</span>勉強</h2>
+      <textarea id="study-input" rows="3" placeholder="学んだこと…"></textarea>
+      <input class="tag-input" id="study-tags" placeholder="タグ (例: 数学, 英語)">
+      <button class="btn-save" data-section="study">保存</button>
+      <ul class="history" id="study-history"></ul>
+    </section>
+
+    <section id="work">
+      <h2><span class="section-icon">💼</span>仕事</h2>
+      <textarea id="work-input" rows="3" placeholder="仕事の記録…"></textarea>
+      <input class="tag-input" id="work-tags" placeholder="タグ (例: 会議, タスク)">
+      <button class="btn-save" data-section="work">保存</button>
+      <ul class="history" id="work-history"></ul>
+    </section>
+
+    <section id="schedule">
+      <h2><span class="section-icon">📅</span>スケジュール</h2>
+      <textarea id="schedule-input" rows="3" placeholder="予定…"></textarea>
+      <input class="tag-input" id="schedule-tags" placeholder="タグ (例: 締切, イベント)">
+      <button class="btn-save" data-section="schedule">保存</button>
+      <ul class="history" id="schedule-history"></ul>
+    </section>
   </div>
 
-  
+  <div class="toast" id="toast"></div>
+
   <script>
- // LifeDashboard v2.0 JavaScript
-class LifeDashboard {
-  constructor() {
-    this.data = this.loadData();
-    this.sections = [
-      { id: 'diary', name: '日記', icon: '📖', class: 'diary-icon' },
-      { id: 'study', name: '勉強', icon: '📚', class: 'study-icon' },
-      { id: 'work', name: '仕事', icon: '💼', class: 'work-icon' },
-      { id: 'schedule', name: 'スケジュール', icon: '📅', class: 'schedule-icon' }
-    ];
-    this.currentTheme = localStorage.getItem('lifedashboard-theme') || 'light';
-    this.autoSaveTimeout = null;
-    
-    this.init();
-  }
-
-  init() {
-    this.setTheme(this.currentTheme);
-    this.updateCurrentDate();
-    this.createSections();
-    this.bindEvents();
-    this.loadSectionData();
-    this.showToast('LifeDashboard v2.0 準備完了！', 'success');
-  }
-
-  // データ管理
-  loadData() {
-    try {
-      const saved = localStorage.getItem('lifedashboard-data');
-      return saved ? JSON.parse(saved) : {};
-    } catch (error) {
-      console.error('データの読み込みに失敗:', error);
-      return {};
-    }
-  }
-
-  saveData(showIndicator = true) {
-    try {
-      localStorage.setItem('lifedashboard-data', JSON.stringify(this.data));
-      if (showIndicator) {
-        this.showAutoSaveIndicator();
-      }
-    } catch (error) {
-      console.error('データの保存に失敗:', error);
-      this.showToast('データ保存に失敗しました', 'error');
-    }
-  }
-
-  // テーマ管理
-  setTheme(theme) {
-    document.body.setAttribute('data-theme', theme);
-    this.currentTheme = theme;
-    localStorage.setItem('lifedashboard-theme', theme);
-    
-    const themeIcon = document.getElementById('theme-icon');
-    const themeText = document.getElementById('theme-text');
-    
-    if (theme === 'dark') {
-      themeIcon.textContent = '☀️';
-      themeText.textContent = 'ライト';
-    } else {
-      themeIcon.textContent = '🌙';
-      themeText.textContent = 'ダーク';
-    }
-  }
-
-  toggleTheme() {
-    const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-    this.setTheme(newTheme);
-    this.showToast(`${newTheme === 'dark' ? 'ダーク' : 'ライト'}モードに切り替えました`, 'info');
-  }
-
-  // 現在の日付表示
-  updateCurrentDate() {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
     });
-    document.getElementById('current-date').textContent = dateStr;
-  }
 
-  // セクション作成
-  createSections() {
-    const container = document.getElementById('sections-container');
-    container.innerHTML = '';
-
-    this.sections.forEach(section => {
-      const sectionElement = this.createSectionElement(section);
-      container.appendChild(sectionElement);
-    });
-  }
-
-  createSectionElement(section) {
-    const sectionDiv = document.createElement('section');
-    sectionDiv.id = `section-${section.id}`;
-    
-    sectionDiv.innerHTML = `
-      <h2>
-        <div class="section-icon ${section.class}">${section.icon}</div>
-        ${section.name}
-      </h2>
-      
-      <textarea 
-        id="${section.id}-input" 
-        placeholder="${section.name}の内容を入力してください..."
-        rows="4"
-      ></textarea>
-      
-      <input 
-        type="text" 
-        class="tag-input" 
-        id="${section.id}-tags" 
-        placeholder="タグをカンマ区切りで入力 (例: 重要, 作業中, 完了)"
-      >
-      
-      <div class="btn-group">
-        <button class="save-btn" onclick="dashboard.saveEntry('${section.id}')">
-          💾 保存
-        </button>
-        <button class="export-section-btn" onclick="dashboard.exportSection('${section.id}')">
-          📤 エクスポート
-        </button>
-      </div>
-      
-      <div class="history" id="${section.id}-history"></div>
-    `;
-
-    return sectionDiv;
-  }
-
-  // エントリー保存
-  saveEntry(sectionId) {
-    const input = document.getElementById(`${sectionId}-input`);
-    const tagsInput = document.getElementById(`${sectionId}-tags`);
-    
-    const content = input.value.trim();
-    const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-
-    if (!content) {
-      this.showToast('内容を入力してください', 'warning');
-      return;
+    function init() {
+      updateDate();
+      restoreTheme();
+      bindControls();
+      loadAllSections();
     }
 
-    const entry = {
-      id: Date.now(),
-      content: content,
-      tags: tags,
-      timestamp: new Date().toISOString(),
-      section: sectionId
-    };
-
-    if (!this.data[sectionId]) {
-      this.data[sectionId] = [];
+    function updateDate() {
+      const now = new Date();
+      document.getElementById('current-date').textContent =
+        now.toLocaleDateString('ja-JP', {
+          year:'numeric',month:'long',day:'numeric',weekday:'long'
+        });
     }
 
-    this.data[sectionId].unshift(entry);
-    this.saveData();
-    this.renderHistory(sectionId);
-    
-    // フォームクリア
-    input.value = '';
-    tagsInput.value = '';
-    
-    this.showToast('エントリーを保存しました！', 'success');
-  }
-
-  // 履歴表示
-  renderHistory(sectionId) {
-    const historyContainer = document.getElementById(`${sectionId}-history`);
-    const entries = this.data[sectionId] || [];
-    
-    if (entries.length === 0) {
-      historyContainer.innerHTML = `
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          <p>まだエントリーがありません</p>
-        </div>
-      `;
-      return;
+    function restoreTheme() {
+      const btn = document.getElementById('toggle-theme');
+      const theme = localStorage.getItem('theme') || 'light';
+      document.body.dataset.theme = theme;
+      btn.textContent = theme === 'light' ? '🌙 ダーク' : '☀️ ライト';
     }
 
-    historyContainer.innerHTML = entries.map(entry => this.createEntryHTML(entry, sectionId)).join('');
-  }
+    function toggleTheme() {
+      const body = document.body;
+      const next = body.dataset.theme === 'light' ? 'dark' : 'light';
+      body.dataset.theme = next;
+      localStorage.setItem('theme', next);
+      document.getElementById('toggle-theme').textContent =
+        next === 'light' ? '🌙 ダーク' : '☀️ ライト';
+      showToast('テーマを切り替えました');
+    }
 
-  createEntryHTML(entry, sectionId) {
-    const date = new Date(entry.timestamp);
-    const dateStr = date.toLocaleDateString('ja-JP') + ' ' + date.toLocaleTimeString('ja-JP');
-    
-    const tagsHTML = entry.tags.map(tag => `<span class="badge">${tag}</span>`).join('');
-    
-    return `
-      <li>
-        <div class="entry-header">
-          <div class="timestamp">${dateStr}</div>
-          <div class="entry-actions">
-            <button class="delete-btn" onclick="dashboard.deleteEntry('${sectionId}', ${entry.id})">
-              🗑️ 削除
-            </button>
-          </div>
-        </div>
-        ${entry.tags.length > 0 ? `<div class="tags-container">${tagsHTML}</div>` : ''}
-        <div class="entry-content">${entry.content}</div>
-      </li>
-    `;
-  }
+    function bindControls() {
+      document.getElementById('toggle-theme')
+        .addEventListener('click', toggleTheme);
 
-  // エントリー削除
-  deleteEntry(sectionId, entryId) {
-    if (!confirm('このエントリーを削除しますか？')) return;
-    
-    this.data[sectionId] = this.data[sectionId].filter(entry => entry.id !== entryId);
-    this.saveData();
-    this.renderHistory(sectionId);
-    this.showToast('エントリーを削除しました', 'info');
-  }
-
-  // 検索・フィルター
-  performSearch() {
-    const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    const tagFilter = document.getElementById('tag-filter-input').value.toLowerCase();
-    
-    this.sections.forEach(section => {
-      const entries = this.data[section.id] || [];
-      const filtered = entries.filter(entry => {
-        const contentMatch = entry.content.toLowerCase().includes(searchTerm);
-        const tagMatch = tagFilter === '' || entry.tags.some(tag => 
-          tag.toLowerCase().includes(tagFilter)
-        );
-        return contentMatch && tagMatch;
+      document.querySelectorAll('.btn-save').forEach(btn => {
+        btn.addEventListener('click', () => {
+          saveEntry(btn.dataset.section);
+        });
       });
-      
-      this.renderFilteredHistory(section.id, filtered);
-    });
-  }
 
-  renderFilteredHistory(sectionId, entries) {
-    const historyContainer = document.getElementById(`${sectionId}-history`);
-    
-    if (entries.length === 0) {
-      historyContainer.innerHTML = `
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24">
-            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-          </svg>
-          <p>検索条件に一致するエントリーがありません</p>
-        </div>
-      `;
-      return;
+      document.getElementById('export-all')
+        .addEventListener('click', exportAll);
+
+      document.getElementById('import-all')
+        .addEventListener('click', () => {
+          document.getElementById('file-input').click();
+        });
+
+      document.getElementById('file-input')
+        .addEventListener('change', handleImport);
     }
 
-    historyContainer.innerHTML = entries.map(entry => this.createEntryHTML(entry, sectionId)).join('');
-  }
+    function saveEntry(section) {
+      const txtEl  = document.getElementById(`${section}-input`);
+      const tagEl  = document.getElementById(`${section}-tags`);
+      const txt    = txtEl.value.trim();
+      if (!txt) return showToast('内容を入力してください','error');
 
-  // データ管理機能
-  exportAllData() {
-    const exportData = {
-      version: '2.0',
-      timestamp: new Date().toISOString(),
-      theme: this.currentTheme,
-      data: this.data
-    };
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `lifedashboard-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    this.showToast('データをエクスポートしました！', 'success');
-  }
+      const now    = new Date();
+      const header = `### ${now.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'})} ${now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}\n`;
+      const tags   = tagEl.value
+        .split(',').map(t=>t.trim()).filter(t=>t);
+      const tagLn  = tags.length ? `タグ: ${tags.map(t=>`#${t}`).join(' ')}\n` : '';
+      const entry  = header + tagLn + txt + '\n\n';
 
-  exportSection(sectionId) {
-    const sectionData = this.data[sectionId] || [];
-    const sectionName = this.sections.find(s => s.id === sectionId)?.name || sectionId;
-    
-    const exportData = {
-      section: sectionName,
-      timestamp: new Date().toISOString(),
-      entries: sectionData
-    };
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${sectionId}-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    this.showToast(`${sectionName}データをエクスポートしました！`, 'success');
-  }
+      const key    = `${section}-md`;
+      const prev   = localStorage.getItem(key) || '';
+      localStorage.setItem(key, entry + prev);
 
-  importData() {
-    document.getElementById('file-input').click();
-  }
+      txtEl.value = '';
+      tagEl.value = '';
+      renderHistory(section);
+      showToast('保存しました！');
+    }
 
-  handleFileImport(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+    function renderHistory(section) {
+      const key = `${section}-md`;
+      const md  = localStorage.getItem(key) || '';
+      const ul  = document.getElementById(`${section}-history`);
+      if (!md.trim()) {
+        ul.innerHTML = '<li class="timestamp empty-state">まだ記録がありません</li>';
+        return;
+      }
+      const blocks = md.trim().split('\n### ').map((b,i)=> i===0? b : '### '+b);
+      ul.innerHTML = blocks.map(block => {
+        const lines = block.split('\n');
+        const ts    = lines[0].replace(/^###\s*/,'');
+        let idx = 1, tags = [];
+        if (lines[1].startsWith('タグ:')) {
+          tags = lines[1].replace(/^タグ:\s*/,'').split(' ').map(t=>t.replace('#',''));
+          idx = 2;
+        }
+        const content = lines.slice(idx).join('\n');
+        const badges  = tags.map(t=>`<span class="badge">${t}</span>`).join('');
+        return `
+          <li>
+            <div class="timestamp">${ts}</div>
+            ${badges? `<div>${badges}</div>` : ''}
+            <div class="entry-content">${escapeHtml(content)}</div>
+          </li>`;
+      }).join('');
+    }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target.result);
-        
-        if (importedData.version && importedData.data) {
-          // 完全バックアップファイル
-          if (confirm('既存のデータを上書きしますか？')) {
-            this.data = importedData.data;
-            if (importedData.theme) {
-              this.setTheme(importedData.theme);
-            }
-          }
-        } else if (importedData.section && importedData.entries) {
-          // セクション単体ファイル
-          const sectionId = this.sections.find(s => s.name === importedData.section)?.id;
-          if (sectionId) {
-            if (confirm(`${importedData.section}のデータをインポートしますか？`)) {
-              this.data[sectionId] = importedData.entries;
-            }
-          }
+    function loadAllSections() {
+      ['diary','study','work','schedule'].forEach(renderHistory);
+    }
+
+    function exportAll() {
+      const now   = new Date();
+      let md      = `# LifeDashboard - ${now.getFullYear()}年${now.toLocaleDateString('ja-JP',{month:'long'})}\n\n`;
+      ['diary','study','work','schedule'].forEach(sec => {
+        const data = localStorage.getItem(`${sec}-md`) || '';
+        if (!data.trim()) return;
+        const title = document.querySelector(`#${sec} h2`).innerText;
+        md += `## ${title}\n\n` + data;
+      });
+      const blob  = new Blob([md], { type:'text/markdown' });
+      const url   = URL.createObjectURL(blob);
+      const a     = document.createElement('a');
+      a.href      = url;
+      a.download  = `LifeDashboard-${now.toISOString().split('T')[0]}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('エクスポート完了！');
+    }
+
+    function handleImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const text = ev.target.result;
+        const imp  = parseImportedMarkdown(text);
+        if (confirm('既存に追加しますか？キャンセルで上書き')) {
+          Object.keys(imp).forEach(sec => {
+            const prev = localStorage.getItem(`${sec}-md`) || '';
+            localStorage.setItem(`${sec}-md`, imp[sec] + prev);
+          });
         } else {
-          throw new Error('不正なファイル形式です');
+          Object.keys(imp).forEach(sec => {
+            localStorage.setItem(`${sec}-md`, imp[sec]);
+          });
         }
-        
-        this.saveData();
-        this.loadSectionData();
-        this.showToast('データをインポートしました！', 'success');
-        
-      } catch (error) {
-        console.error('Import error:', error);
-        this.showToast('インポートに失敗しました', 'error');
-      }
-    };
-    
-    reader.readAsText(file);
-    event.target.value = '';
-  }
-
-  createBackup() {
-    const backupData = {
-      version: '2.0',
-      timestamp: new Date().toISOString(),
-      theme: this.currentTheme,
-      data: this.data,
-      metadata: {
-        totalEntries: Object.values(this.data).reduce((sum, entries) => sum + entries.length, 0),
-        sections: Object.keys(this.data)
-      }
-    };
-    
-    const backupKey = `lifedashboard-backup-${Date.now()}`;
-    localStorage.setItem(backupKey, JSON.stringify(backupData));
-    
-    this.showToast('バックアップを作成しました！', 'success');
-  }
-
-  clearAllData() {
-    if (!confirm('全てのデータを削除しますか？この操作は取り消せません。')) return;
-    if (!confirm('本当によろしいですか？')) return;
-    
-    this.data = {};
-    this.saveData(false);
-    this.loadSectionData();
-    this.showToast('全データを削除しました', 'info');
-  }
-
-  // セクションデータの読み込み
-  loadSectionData() {
-    this.sections.forEach(section => {
-      this.renderHistory(section.id);
-    });
-  }
-
-  // 自動保存インジケーター
-  showAutoSaveIndicator() {
-    const indicator = document.getElementById('auto-save');
-    indicator.classList.add('show');
-    setTimeout(() => {
-      indicator.classList.remove('show');
-    }, 2000);
-  }
-
-  // トースト通知
-  showToast(message, type = 'info') {
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-      existingToast.remove();
+        loadAllSections();
+        showToast('インポート完了！');
+      };
+      reader.readAsText(file);
+      e.target.value = '';
     }
 
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    
-    // タイプに応じてスタイル変更
-    if (type === 'success') {
-      toast.style.background = 'var(--gradient-success)';
-    } else if (type === 'warning') {
-      toast.style.background = 'var(--gradient-warning)';
-    } else if (type === 'error') {
-      toast.style.background = 'var(--accent-red)';
+    function parseImportedMarkdown(md) {
+      const map = { '日記':'diary','勉強':'study','仕事':'work','スケジュール':'schedule' };
+      const lines = md.split('\n');
+      let cur = null, buf = '';
+      const out = { diary:'', study:'', work:'', schedule:'' };
+      for (let line of lines) {
+        if (line.startsWith('## ')) {
+          if (cur && buf) {
+            out[cur] += buf + '\n';
+          }
+          buf = '';
+          const title = line.replace('## ','').trim();
+          cur = map[title] || null;
+        } else if (cur) {
+          buf += line + '\n';
+        }
+      }
+      if (cur && buf) out[cur] += buf;
+      return out;
     }
-    
-    document.body.appendChild(toast);
-    
-    // アニメーション
-    setTimeout(() => toast.classList.add('show'), 100);
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 400);
-    }, 3000);
-  }
 
-  // イベントバインディング
-  bindEvents() {
-    // テーマ切り替え
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      this.toggleTheme();
-    });
+    function showToast(msg, type='info') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.background = type==='error'? 'var(--accent-red)' : 'var(--accent)';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
 
-    // 検索・フィルター
-    document.getElementById('search-input').addEventListener('input', () => {
-      clearTimeout(this.searchTimeout);
-      this.searchTimeout = setTimeout(() => this.performSearch(), 300);
-    });
-
-    document.getElementById('tag-filter-input').addEventListener('input', () => {
-      clearTimeout(this.filterTimeout);
-      this.filterTimeout = setTimeout(() => this.performSearch(), 300);
-    });
-
-    // データ管理ボタン
-    document.getElementById('export-all').addEventListener('click', () => {
-      this.exportAllData();
-    });
-
-    document.getElementById('import-data').addEventListener('click', () => {
-      this.importData();
-    });
-
-    document.getElementById('create-backup').addEventListener('click', () => {
-      this.createBackup();
-    });
-
-    document.getElementById('clear-all').addEventListener('click', () => {
-      this.clearAllData();
-    });
-
-    // ファイルインポート
-    document.getElementById('file-input').addEventListener('change', (e) => {
-      this.handleFileImport(e);
-    });
-
-    // 自動保存（入力時）
-    document.addEventListener('input', (e) => {
-      if (e.target.matches('textarea, .tag-input')) {
-        clearTimeout(this.autoSaveTimeout);
-        this.autoSaveTimeout = setTimeout(() => {
-          // 一時保存（下書き）機能
-          const sectionId = e.target.id.replace('-input', '').replace('-tags', '');
-          const draftKey = `draft-${sectionId}`;
-          const draftData = {
-            content: document.getElementById(`${sectionId}-input`)?.value || '',
-            tags: document.getElementById(`${sectionId}-tags`)?.value || '',
-            timestamp: Date.now()
-          };
-          localStorage.setItem(draftKey, JSON.stringify(draftData));
-        }, 1000);
-      }
-    });
-
-    // ページ読み込み時の下書き復元
-    window.addEventListener('beforeunload', () => {
-      this.sections.forEach(section => {
-        const content = document.getElementById(`${section.id}-input`)?.value;
-        const tags = document.getElementById(`${section.id}-tags`)?.value;
-        if (content || tags) {
-          const draftKey = `draft-${section.id}`;
-          const draftData = { content, tags, timestamp: Date.now() };
-          localStorage.setItem(draftKey, JSON.stringify(draftData));
-        }
-      });
-    });
-  }
-
-  // 下書き復元
-  restoreDrafts() {
-    this.sections.forEach(section => {
-      const draftKey = `draft-${section.id}`;
-      const draft = localStorage.getItem(draftKey);
-      if (draft) {
-        try {
-          const draftData = JSON.parse(draft);
-          const contentInput = document.getElementById(`${section.id}-input`);
-          const tagsInput = document.getElementById(`${section.id}-tags`);
-          
-          if (contentInput && draftData.content) {
-            contentInput.value = draftData.content;
-          }
-          if (tagsInput && draftData.tags) {
-            tagsInput.value = draftData.tags;
-          }
-        } catch (error) {
-          console.error('下書き復元エラー:', error);
-        }
-      }
-    });
-  }
-}
-
-// 初期化
-let dashboard;
-document.addEventListener('DOMContentLoaded', () => {
-  dashboard = new LifeDashboard();
-  
-  // 下書き復元
-  setTimeout(() => {
-    dashboard.restoreDrafts();
-  }, 100);
-});
-</script>
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+  </script>
 </body>
 </html>
