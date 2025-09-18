@@ -97,6 +97,12 @@
     .data-management button:hover {
       background: var(--accent-red);
     }
+    .data-management .btn-delete-all {
+      background: var(--accent-red);
+    }
+    .data-management .btn-delete-all:hover {
+      background: #e53e3e;
+    }
     section {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -107,9 +113,15 @@
     section h2 {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       font-size: 1.2rem;
       margin-bottom: 12px;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .section-icon {
       width: 28px; height: 28px;
@@ -119,6 +131,19 @@
       justify-content: center;
       background: var(--accent);
       color: #fff;
+    }
+    .section-delete {
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      border: none;
+      border-radius: 4px;
+      background: var(--accent-red);
+      color: #fff;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .section-delete:hover {
+      background: #e53e3e;
     }
     textarea, .tag-input {
       width: 100%;
@@ -203,12 +228,18 @@
     <div class="data-management">
       <button id="export-all">💾 エクスポート</button>
       <button id="import-all">📥 インポート</button>
+      <button id="delete-all" class="btn-delete-all">🗑️ 全削除</button>
     </div>
 
     <input type="file" id="file-input" accept=".md,.txt" style="display:none">
 
     <section id="diary">
-      <h2><span class="section-icon">📖</span>日記</h2>
+      <h2>
+        <span class="section-title">
+          <span class="section-icon">📖</span>日記
+        </span>
+        <button class="section-delete" data-section="diary">削除</button>
+      </h2>
       <textarea id="diary-input" rows="3" placeholder="今日の出来事…"></textarea>
       <input class="tag-input" id="diary-tags" placeholder="タグ (例: 重要, 楽しい)">
       <button class="btn-save" data-section="diary">保存</button>
@@ -216,7 +247,12 @@
     </section>
 
     <section id="study">
-      <h2><span class="section-icon">📚</span>勉強</h2>
+      <h2>
+        <span class="section-title">
+          <span class="section-icon">📚</span>勉強
+        </span>
+        <button class="section-delete" data-section="study">削除</button>
+      </h2>
       <textarea id="study-input" rows="3" placeholder="学んだこと…"></textarea>
       <input class="tag-input" id="study-tags" placeholder="タグ (例: 数学, 英語)">
       <button class="btn-save" data-section="study">保存</button>
@@ -224,7 +260,12 @@
     </section>
 
     <section id="work">
-      <h2><span class="section-icon">💼</span>仕事</h2>
+      <h2>
+        <span class="section-title">
+          <span class="section-icon">💼</span>仕事
+        </span>
+        <button class="section-delete" data-section="work">削除</button>
+      </h2>
       <textarea id="work-input" rows="3" placeholder="仕事の記録…"></textarea>
       <input class="tag-input" id="work-tags" placeholder="タグ (例: 会議, タスク)">
       <button class="btn-save" data-section="work">保存</button>
@@ -232,7 +273,12 @@
     </section>
 
     <section id="schedule">
-      <h2><span class="section-icon">📅</span>スケジュール</h2>
+      <h2>
+        <span class="section-title">
+          <span class="section-icon">📅</span>スケジュール
+        </span>
+        <button class="section-delete" data-section="schedule">削除</button>
+      </h2>
       <textarea id="schedule-input" rows="3" placeholder="予定…"></textarea>
       <input class="tag-input" id="schedule-tags" placeholder="タグ (例: 締切, イベント)">
       <button class="btn-save" data-section="schedule">保存</button>
@@ -289,6 +335,12 @@
         });
       });
 
+      document.querySelectorAll('.section-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          deleteSection(btn.dataset.section);
+        });
+      });
+
       document.getElementById('export-all')
         .addEventListener('click', exportAll);
 
@@ -296,6 +348,9 @@
         .addEventListener('click', () => {
           document.getElementById('file-input').click();
         });
+
+      document.getElementById('delete-all')
+        .addEventListener('click', deleteAllSections);
 
       document.getElementById('file-input')
         .addEventListener('change', handleImport);
@@ -322,6 +377,31 @@
       tagEl.value = '';
       renderHistory(section);
       showToast('保存しました！');
+    }
+
+    function deleteSection(section) {
+      const sectionNames = {
+        diary: '日記',
+        study: '勉強', 
+        work: '仕事',
+        schedule: 'スケジュール'
+      };
+      
+      if (confirm(`${sectionNames[section]}の履歴をすべて削除しますか？この操作は取り消せません。`)) {
+        localStorage.removeItem(`${section}-md`);
+        renderHistory(section);
+        showToast(`${sectionNames[section]}を削除しました`);
+      }
+    }
+
+    function deleteAllSections() {
+      if (confirm('すべてのデータを削除しますか？この操作は取り消せません。')) {
+        ['diary', 'study', 'work', 'schedule'].forEach(section => {
+          localStorage.removeItem(`${section}-md`);
+        });
+        loadAllSections();
+        showToast('すべてのデータを削除しました');
+      }
     }
 
     function renderHistory(section) {
@@ -362,7 +442,7 @@
       ['diary','study','work','schedule'].forEach(sec => {
         const data = localStorage.getItem(`${sec}-md`) || '';
         if (!data.trim()) return;
-        const title = document.querySelector(`#${sec} h2`).innerText;
+        const title = document.querySelector(`#${sec} h2 .section-title`).innerText;
         md += `## ${title}\n\n` + data;
       });
       const blob  = new Blob([md], { type:'text/markdown' });
