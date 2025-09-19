@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8"/>
   <title>LifeDashboard</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
     :root {
-      --bg: #f5f7fa;
-      --fg: #2d3748;
-      --muted: #718096;
-      --border: #e2e8f0;
-      --accent: #4299e1;
-      --accent-red: #f56565;
+      --bg: #F2F2F2;
+      --fg: #2E2E2E;
+      --muted: #7A7A7A;
+      --border: #CCCCCC;
+      --accent: #A0A0A0;
+      --accent-red: #B05050;
     }
     [data-theme="dark"] {
-      --bg: #1a202c;
-      --fg: #e2e8f0;
-      --muted: #cbd5e0;
-      --border: #4a5568;
-      --accent: #63b3ed;
-      --accent-red: #fc8181;
+      --bg: #2A2A2A;
+      --fg: #E0E0E0;
+      --muted: #A0A0A0;
+      --border: #444444;
+      --accent: #777777;
+      --accent-red: #A04040;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      transition: background-color .2s, color .2s, border-color .2s;
+      box-sizing: border-box;
+    }
     body {
-      font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--fg);
-      transition: background .3s,color .3s;
       line-height: 1.5;
     }
     .container {
@@ -52,32 +55,21 @@
       flex-wrap: wrap;
       margin-bottom: 16px;
     }
-    .controls input {
-      flex: 1;
-      min-width: 120px;
-      padding: 8px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg);
-      color: var(--fg);
-      transition: border .2s;
-    }
-    .controls input:focus {
-      border-color: var(--accent);
-    }
+    .controls input,
     .controls button {
-      padding: 8px 12px;
+      flex: 1;
+      font-size: 1rem;
+      padding: 6px 10px;
       border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg);
+      border-radius: 2px;
+      background: transparent;
       color: var(--fg);
-      cursor: pointer;
-      transition: background .2s, border .2s;
     }
     .controls button:hover {
-      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--bg);
+      cursor: pointer;
     }
-    .theme-toggle { font-weight: 600; }
     .data-management {
       display: flex;
       gap: 8px;
@@ -86,91 +78,76 @@
     }
     .data-management button {
       flex: 1;
-      padding: 8px;
-      border: none;
-      border-radius: 4px;
-      background: var(--accent);
-      color: #fff;
-      cursor: pointer;
-      transition: background .2s;
-    }
-    .data-management button:hover {
-      background: var(--accent-red);
+      font-size: 1rem;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--fg);
     }
     .data-management .btn-delete-all {
-      background: var(--accent-red);
+      border-color: var(--accent-red);
     }
-    .data-management .btn-delete-all:hover {
-      background: #e53e3e;
-    }
-    section {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    section h2 {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 1.2rem;
-      margin-bottom: 12px;
-    }
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-icon {
-      width: 28px; height: 28px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .data-management button:hover {
       background: var(--accent);
-      color: #fff;
-    }
-    .section-delete {
-      padding: 4px 8px;
-      font-size: 0.8rem;
-      border: none;
-      border-radius: 4px;
-      background: var(--accent-red);
-      color: #fff;
+      color: var(--bg);
       cursor: pointer;
-      transition: background .2s;
     }
-    .section-delete:hover {
-      background: #e53e3e;
+    .btn-save {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
     }
-    textarea, .tag-input {
+    .btn-save:hover {
+      background: var(--accent-red);
+      border-color: var(--accent-red);
+      cursor: pointer;
+    }
+    textarea,
+    .tag-input {
       width: 100%;
+      font-size: 1rem;
       padding: 8px;
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: 2px;
       background: var(--bg);
       color: var(--fg);
       resize: vertical;
       margin-bottom: 8px;
     }
-    .btn-save {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px;
-      background: var(--accent);
-      color: #fff;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background .2s;
-    }
-    .btn-save:hover {
+    button.section-delete {
       background: var(--accent-red);
+      border: none;
+      color: var(--bg);
+      padding: 4px 8px;
+      border-radius: 2px;
+      font-size: .9rem;
     }
-    .history {
+    button.section-delete:hover {
+      background: #A03030;
+      cursor: pointer;
+    }
+    section {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    section h2 {
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .section-icon {
+      margin-right: 8px;
+    }
+    ul.history {
       list-style: none;
       margin-top: 12px;
+      padding: 0;
     }
     .history li {
       border-top: 1px solid var(--border);
@@ -184,10 +161,10 @@
     .badge {
       display: inline-block;
       background: var(--accent);
-      color: #fff;
+      color: var(--bg);
       padding: 2px 6px;
       font-size: .75rem;
-      border-radius: 4px;
+      border-radius: 2px;
       margin-right: 4px;
     }
     .entry-content {
@@ -199,11 +176,10 @@
       bottom: 20px; right: 20px;
       padding: 8px 16px;
       background: var(--accent);
-      color: #fff;
-      border-radius: 4px;
+      color: var(--bg);
+      border-radius: 2px;
       opacity: 0;
       transform: translateY(20px);
-      transition: opacity .3s, transform .3s;
       pointer-events: none;
     }
     .toast.show {
@@ -221,8 +197,8 @@
 
     <div class="controls">
       <input id="search-input" placeholder="🔍 キーワード">
-      <input id="tag-input"    placeholder="🏷️ タグ絞込">
-      <button class="theme-toggle" id="toggle-theme">🌙 ダーク</button>
+      <input id="tag-input" placeholder="🏷️ タグ絞込">
+      <button id="toggle-theme">🌙 ダーク</button>
     </div>
 
     <div class="data-management">
@@ -231,13 +207,11 @@
       <button id="delete-all" class="btn-delete-all">🗑️ 全削除</button>
     </div>
 
-    <input type="file" id="file-input" accept=".md,.txt" style="display:none">
+    <input type="file" id="file-input" accept=".md" style="display:none">
 
     <section id="diary">
       <h2>
-        <span class="section-title">
-          <span class="section-icon">📖</span>日記
-        </span>
+        <span><span class="section-icon">📖</span>日記</span>
         <button class="section-delete" data-section="diary">削除</button>
       </h2>
       <textarea id="diary-input" rows="3" placeholder="今日の出来事…"></textarea>
@@ -248,9 +222,7 @@
 
     <section id="study">
       <h2>
-        <span class="section-title">
-          <span class="section-icon">📚</span>勉強
-        </span>
+        <span><span class="section-icon">📚</span>勉強</span>
         <button class="section-delete" data-section="study">削除</button>
       </h2>
       <textarea id="study-input" rows="3" placeholder="学んだこと…"></textarea>
@@ -261,9 +233,7 @@
 
     <section id="work">
       <h2>
-        <span class="section-title">
-          <span class="section-icon">💼</span>仕事
-        </span>
+        <span><span class="section-icon">💼</span>仕事</span>
         <button class="section-delete" data-section="work">削除</button>
       </h2>
       <textarea id="work-input" rows="3" placeholder="仕事の記録…"></textarea>
@@ -274,9 +244,7 @@
 
     <section id="schedule">
       <h2>
-        <span class="section-title">
-          <span class="section-icon">📅</span>スケジュール
-        </span>
+        <span><span class="section-icon">📅</span>スケジュール</span>
         <button class="section-delete" data-section="schedule">削除</button>
       </h2>
       <textarea id="schedule-input" rows="3" placeholder="予定…"></textarea>
@@ -289,146 +257,112 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      init();
-    });
+    document.addEventListener('DOMContentLoaded', init);
 
     function init() {
       updateDate();
-      restoreTheme();
-      bindControls();
+      applyStoredTheme();
+      bindEvents();
       loadAllSections();
     }
 
     function updateDate() {
       const now = new Date();
       document.getElementById('current-date').textContent =
-        now.toLocaleDateString('ja-JP', {
-          year:'numeric',month:'long',day:'numeric',weekday:'long'
-        });
+        now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
     }
 
-    function restoreTheme() {
-      const btn = document.getElementById('toggle-theme');
+    function applyStoredTheme() {
       const theme = localStorage.getItem('theme') || 'light';
       document.body.dataset.theme = theme;
-      btn.textContent = theme === 'light' ? '🌙 ダーク' : '☀️ ライト';
+      document.getElementById('toggle-theme').textContent =
+        theme === 'light' ? '🌙 ダーク' : '☀️ ライト';
     }
 
     function toggleTheme() {
-      const body = document.body;
-      const next = body.dataset.theme === 'light' ? 'dark' : 'light';
-      body.dataset.theme = next;
+      const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+      document.body.dataset.theme = next;
       localStorage.setItem('theme', next);
       document.getElementById('toggle-theme').textContent =
         next === 'light' ? '🌙 ダーク' : '☀️ ライト';
       showToast('テーマを切り替えました');
     }
 
-    function bindControls() {
-      document.getElementById('toggle-theme')
-        .addEventListener('click', toggleTheme);
+    function bindEvents() {
+      document.getElementById('toggle-theme').onclick = toggleTheme;
+      document.getElementById('export-all').onclick = exportAll;
+      document.getElementById('import-all').onclick = () =>
+        document.getElementById('file-input').click();
+      document.getElementById('delete-all').onclick = deleteAllSections;
+      document.getElementById('file-input').onchange = handleImport;
 
-      document.querySelectorAll('.btn-save').forEach(btn => {
-        btn.addEventListener('click', () => {
-          saveEntry(btn.dataset.section);
-        });
+      ['diary','study','work','schedule'].forEach(sec => {
+        document.querySelector(`#${sec} .btn-save`).onclick =
+          () => saveEntry(sec);
+        document.querySelector(`#${sec} .section-delete`).onclick =
+          () => deleteSection(sec);
       });
-
-      document.querySelectorAll('.section-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-          deleteSection(btn.dataset.section);
-        });
-      });
-
-      document.getElementById('export-all')
-        .addEventListener('click', exportAll);
-
-      document.getElementById('import-all')
-        .addEventListener('click', () => {
-          document.getElementById('file-input').click();
-        });
-
-      document.getElementById('delete-all')
-        .addEventListener('click', deleteAllSections);
-
-      document.getElementById('file-input')
-        .addEventListener('change', handleImport);
     }
 
     function saveEntry(section) {
-      const txtEl  = document.getElementById(`${section}-input`);
-      const tagEl  = document.getElementById(`${section}-tags`);
-      const txt    = txtEl.value.trim();
+      const txt = document.getElementById(section + '-input').value.trim();
       if (!txt) return showToast('内容を入力してください','error');
 
-      const now    = new Date();
-      const header = `### ${now.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'})} ${now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}\n`;
-      const tags   = tagEl.value
-        .split(',').map(t=>t.trim()).filter(t=>t);
-      const tagLn  = tags.length ? `タグ: ${tags.map(t=>`#${t}`).join(' ')}\n` : '';
-      const entry  = header + tagLn + txt + '\n\n';
+      const now = new Date();
+      const header = `### ${now.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'})} `
+                   + `${now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}\n`;
+      const tags = document.getElementById(section + '-tags').value
+        .split(',').map(t=>t.trim()).filter(Boolean);
+      const tagLn = tags.length ? `タグ: ${tags.map(t=>'#'+t).join(' ')}\n` : '';
+      const entry = header + tagLn + txt + '\n\n';
 
-      const key    = `${section}-md`;
-      const prev   = localStorage.getItem(key) || '';
-      localStorage.setItem(key, entry + prev);
+      const key = section + '-md';
+      localStorage.setItem(key, entry + (localStorage.getItem(key)||''));
 
-      txtEl.value = '';
-      tagEl.value = '';
+      document.getElementById(section + '-input').value = '';
+      document.getElementById(section + '-tags').value = '';
       renderHistory(section);
       showToast('保存しました！');
     }
 
     function deleteSection(section) {
-      const sectionNames = {
-        diary: '日記',
-        study: '勉強', 
-        work: '仕事',
-        schedule: 'スケジュール'
-      };
-      
-      if (confirm(`${sectionNames[section]}の履歴をすべて削除しますか？この操作は取り消せません。`)) {
-        localStorage.removeItem(`${section}-md`);
-        renderHistory(section);
-        showToast(`${sectionNames[section]}を削除しました`);
-      }
+      const names = {diary:'日記',study:'勉強',work:'仕事',schedule:'スケジュール'};
+      if (!confirm(`${names[section]}をすべて削除しますか？`)) return;
+      localStorage.removeItem(section + '-md');
+      renderHistory(section);
+      showToast(`${names[section]}を削除しました`);
     }
 
     function deleteAllSections() {
-      if (confirm('すべてのデータを削除しますか？この操作は取り消せません。')) {
-        ['diary', 'study', 'work', 'schedule'].forEach(section => {
-          localStorage.removeItem(`${section}-md`);
-        });
-        loadAllSections();
-        showToast('すべてのデータを削除しました');
-      }
+      if (!confirm('すべてのデータを削除しますか？')) return;
+      ['diary','study','work','schedule'].forEach(s =>
+        localStorage.removeItem(s+'-md'));
+      loadAllSections();
+      showToast('すべて削除しました');
     }
 
     function renderHistory(section) {
-      const key = `${section}-md`;
-      const md  = localStorage.getItem(key) || '';
-      const ul  = document.getElementById(`${section}-history`);
-      if (!md.trim()) {
-        ul.innerHTML = '<li class="timestamp empty-state">まだ記録がありません</li>';
+      const key = section + '-md';
+      const md  = (localStorage.getItem(key)||'').trim();
+      const ul  = document.getElementById(section + '-history');
+      if (!md) {
+        ul.innerHTML = '<li class="timestamp empty">まだ記録がありません</li>';
         return;
       }
-      const blocks = md.trim().split('\n### ').map((b,i)=> i===0? b : '### '+b);
+      const blocks = md.split('\n### ').map((b,i)=>i? '### '+b : b);
       ul.innerHTML = blocks.map(block => {
         const lines = block.split('\n');
-        const ts    = lines[0].replace(/^###\s*/,'');
-        let idx = 1, tags = [];
-        if (lines[1].startsWith('タグ:')) {
+        const ts = lines[0].replace(/^###\s*/,'');
+        let idx=1, tags=[];
+        if (lines[1]&&lines[1].startsWith('タグ:')) {
           tags = lines[1].replace(/^タグ:\s*/,'').split(' ').map(t=>t.replace('#',''));
-          idx = 2;
+          idx=2;
         }
         const content = lines.slice(idx).join('\n');
-        const badges  = tags.map(t=>`<span class="badge">${t}</span>`).join('');
-        return `
-          <li>
-            <div class="timestamp">${ts}</div>
-            ${badges? `<div>${badges}</div>` : ''}
-            <div class="entry-content">${escapeHtml(content)}</div>
-          </li>`;
+        const badges = tags.map(t=>`<span class="badge">${t}</span>`).join('');
+        return `<li><div class="timestamp">${ts}</div>`
+             + (badges? `<div>${badges}</div>`:'')
+             + `<div class="entry-content">${escapeHtml(content)}</div></li>`;
       }).join('');
     }
 
@@ -437,19 +371,19 @@
     }
 
     function exportAll() {
-      const now   = new Date();
-      let md      = `# LifeDashboard - ${now.getFullYear()}年${now.toLocaleDateString('ja-JP',{month:'long'})}\n\n`;
+      const now = new Date();
+      let md = `# LifeDashboard ${now.getFullYear()}年${now.toLocaleDateString('ja-JP',{month:'long'})}\n\n`;
       ['diary','study','work','schedule'].forEach(sec => {
-        const data = localStorage.getItem(`${sec}-md`) || '';
-        if (!data.trim()) return;
-        const title = document.querySelector(`#${sec} h2 .section-title`).innerText;
+        const data = (localStorage.getItem(sec+'-md')||'').trim();
+        if (!data) return;
+        const title = document.querySelector(`#${sec} h2 span`).innerText;
         md += `## ${title}\n\n` + data;
       });
-      const blob  = new Blob([md], { type:'text/markdown' });
-      const url   = URL.createObjectURL(blob);
-      const a     = document.createElement('a');
-      a.href      = url;
-      a.download  = `LifeDashboard-${now.toISOString().split('T')[0]}.md`;
+      const blob = new Blob([md], {type:'text/markdown'});
+      const url  = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href     = url;
+      a.download = `LifeDashboard-${now.toISOString().split('T')[0]}.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -458,46 +392,39 @@
     }
 
     function handleImport(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const text = ev.target.result;
-        const imp  = parseImportedMarkdown(text);
-        if (confirm('既存に追加しますか？キャンセルで上書き')) {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        const imp = parseImportedMarkdown(ev.target.result);
+        if (confirm('追加：OK 上書き：キャンセル')) {
           Object.keys(imp).forEach(sec => {
-            const prev = localStorage.getItem(`${sec}-md`) || '';
-            localStorage.setItem(`${sec}-md`, imp[sec] + prev);
+            const prev = localStorage.getItem(sec+'-md')||'';
+            localStorage.setItem(sec+'-md', imp[sec]+prev);
           });
         } else {
-          Object.keys(imp).forEach(sec => {
-            localStorage.setItem(`${sec}-md`, imp[sec]);
-          });
+          Object.keys(imp).forEach(sec =>
+            localStorage.setItem(sec+'-md', imp[sec]));
         }
         loadAllSections();
         showToast('インポート完了！');
       };
-      reader.readAsText(file);
+      r.readAsText(f);
       e.target.value = '';
     }
 
     function parseImportedMarkdown(md) {
-      const map = { '日記':'diary','勉強':'study','仕事':'work','スケジュール':'schedule' };
-      const lines = md.split('\n');
-      let cur = null, buf = '';
-      const out = { diary:'', study:'', work:'', schedule:'' };
-      for (let line of lines) {
+      const map = {'日記':'diary','勉強':'study','仕事':'work','スケジュール':'schedule'};
+      const out = {diary:'',study:'',work:'',schedule:''};
+      let cur=null, buf='';
+      md.split('\n').forEach(line => {
         if (line.startsWith('## ')) {
-          if (cur && buf) {
-            out[cur] += buf + '\n';
-          }
-          buf = '';
-          const title = line.replace('## ','').trim();
-          cur = map[title] || null;
+          if (cur && buf) { out[cur]+= buf+'\n'; buf=''; }
+          cur = map[line.replace('## ','').trim()]||null;
         } else if (cur) {
-          buf += line + '\n';
+          buf += line+'\n';
         }
-      }
+      });
       if (cur && buf) out[cur] += buf;
       return out;
     }
@@ -510,11 +437,12 @@
       setTimeout(() => t.classList.remove('show'), 2000);
     }
 
-    function escapeHtml(str) {
+    function escapeHtml(s) {
       const d = document.createElement('div');
-      d.textContent = str;
+      d.textContent = s;
       return d.innerHTML;
     }
   </script>
 </body>
 </html>
+
